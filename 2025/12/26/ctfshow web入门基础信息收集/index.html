@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="https://cdn.staticfile.org/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet">
+<link href="https://cdn.staticfile.org/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet">
+<link href="https://cdn.staticfile.org/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet">
+<script src="/js/color.global.min.js" ></script>
+<script src="/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+
+  
+  <title>cuttlefish</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="preload" href="/css/fonts/Roboto-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+  <link rel="preload" href="/css/fonts/Roboto-Bold.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+
+  <meta name="description" content="ctfshow web入门基础信息收集robots.txt 一个非常重要得到文件，通常情况下，主要用于指定搜索引擎蜘蛛spider在网站里的抓取范围,用于声明蜘蛛不可以抓取哪些网站资源及可以抓取哪些网站资源。 php源码泄露 php源码保存在phps,可以通过访问&#x2F;index.phps来获取。 web6网站备份漏洞：网站备份压缩文件 漏洞成因:在网站的升级和维护过程中，通常需要对网站中的文件进行修">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cuttlefish">
+<meta property="og:url" content="http://cuttlefish520.github.io/2025/12/26/ctfshow%20web%E5%85%A5%E9%97%A8%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/index.html">
+<meta property="og:site_name" content="cuttlefish">
+<meta property="og:description" content="ctfshow web入门基础信息收集robots.txt 一个非常重要得到文件，通常情况下，主要用于指定搜索引擎蜘蛛spider在网站里的抓取范围,用于声明蜘蛛不可以抓取哪些网站资源及可以抓取哪些网站资源。 php源码泄露 php源码保存在phps,可以通过访问&#x2F;index.phps来获取。 web6网站备份漏洞：网站备份压缩文件 漏洞成因:在网站的升级和维护过程中，通常需要对网站中的文件进行修">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="d:\wwh\Pictures\web19.png">
+<meta property="og:image" content="d:\wwh\Pictures\%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE 2025-11-16 151332.png">
+<meta property="article:published_time" content="2025-12-26T12:34:11.691Z">
+<meta property="article:modified_time" content="2025-11-20T16:11:14.635Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="d:\wwh\Pictures\web19.png">
+  
+    <link rel="alternate" href="/atom.xml" title="cuttlefish" type="application/atom+xml">
+  
+  
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/images/favicon-light-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/images/favicon-light-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/images/favicon-light-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/images/favicon-light-192.png" sizes="192x192">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/images/favicon-dark-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/images/favicon-dark-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/images/favicon-dark-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/images/favicon-dark-192.png" sizes="192x192">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="/null" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="  ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>cuttlefish </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="light-mode-icon"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M438.5-829.913v-48q0-17.452 11.963-29.476 11.964-12.024 29.326-12.024 17.363 0 29.537 12.024t12.174 29.476v48q0 17.452-11.963 29.476-11.964 12.024-29.326 12.024-17.363 0-29.537-12.024T438.5-829.913Zm0 747.826v-48q0-17.452 11.963-29.476 11.964-12.024 29.326-12.024 17.363 0 29.537 12.024t12.174 29.476v48q0 17.452-11.963 29.476-11.964 12.024-29.326 12.024-17.363 0-29.537-12.024T438.5-82.087ZM877.913-438.5h-48q-17.452 0-29.476-11.963-12.024-11.964-12.024-29.326 0-17.363 12.024-29.537t29.476-12.174h48q17.452 0 29.476 11.963 12.024 11.964 12.024 29.326 0 17.363-12.024 29.537T877.913-438.5Zm-747.826 0h-48q-17.452 0-29.476-11.963-12.024-11.964-12.024-29.326 0-17.363 12.024-29.537T82.087-521.5h48q17.452 0 29.476 11.963 12.024 11.964 12.024 29.326 0 17.363-12.024 29.537T130.087-438.5Zm660.174-290.87-34.239 32q-12.913 12.674-29.565 12.174-16.653-.5-29.327-13.174-12.674-12.673-12.554-28.826.12-16.152 12.794-28.826l33-35q12.913-12.674 30.454-12.674t30.163 12.847q12.709 12.846 12.328 30.826-.38 17.98-13.054 30.653ZM262.63-203.978l-32 34q-12.913 12.674-30.454 12.674t-30.163-12.847q-12.709-12.846-12.328-30.826.38-17.98 13.054-30.653l33.239-31q12.913-12.674 29.565-12.174 16.653.5 29.327 13.174 12.674 12.673 12.554 28.826-.12 16.152-12.794 28.826Zm466.74 33.239-32-33.239q-12.674-12.913-12.174-29.565.5-16.653 13.174-29.327 12.673-12.674 28.826-13.054 16.152-.38 28.826 12.294l35 33q12.674 12.913 12.674 30.454t-12.847 30.163q-12.846 12.709-30.826 12.328-17.98-.38-30.653-13.054ZM203.978-697.37l-34-33q-12.674-12.913-13.174-29.945-.5-17.033 12.174-29.707t31.326-13.293q18.653-.62 31.326 13.054l32 34.239q11.674 12.913 11.174 29.565-.5 16.653-13.174 29.327-12.673 12.674-28.826 12.554-16.152-.12-28.826-12.794ZM480-240q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170t-170 70Zm-.247-82q65.703 0 111.475-46.272Q637-414.544 637-480.247t-45.525-111.228Q545.95-637 480.247-637t-111.475 45.525Q323-545.95 323-480.247t45.525 111.975Q414.05-322 479.753-322ZM481-481Z"/></svg></span>
+      <span class="dark-mode-icon"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M480.239-116.413q-152.63 0-258.228-105.478Q116.413-327.37 116.413-480q0-130.935 77.739-227.435t206.304-125.043q43.022-9.631 63.87 10.869t3.478 62.805q-8.891 22.043-14.315 44.463-5.424 22.42-5.424 46.689 0 91.694 64.326 155.879 64.325 64.186 156.218 64.186 24.369 0 46.978-4.946 22.609-4.945 44.413-14.076 42.826-17.369 62.967 1.142 20.142 18.511 10.511 61.054Q807.174-280 712.63-198.206q-94.543 81.793-232.391 81.793Zm0-95q79.783 0 143.337-40.217 63.554-40.218 95.793-108.283-15.608 4.044-31.097 5.326-15.49 1.283-31.859.805-123.706-4.066-210.777-90.539-87.071-86.473-91.614-212.092-.24-16.369.923-31.978 1.164-15.609 5.446-30.978-67.826 32.478-108.282 96.152Q211.652-559.543 211.652-480q0 111.929 78.329 190.258 78.329 78.329 190.258 78.329ZM466.13-465.891Z"/></svg></span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/atom.xml" title="RSS Feed">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M198-120q-25.846 0-44.23-18.384-18.384-18.385-18.384-44.23 0-25.846 18.384-44.23 18.384-18.385 44.23-18.385 25.846 0 44.23 18.385 18.384 18.384 18.384 44.23 0 25.845-18.384 44.23Q223.846-120 198-120Zm538.385 0q-18.846 0-32.923-13.769-14.076-13.769-15.922-33.23-8.692-100.616-51.077-188.654-42.385-88.039-109.885-155.539-67.5-67.501-155.539-109.885Q283-663.462 182.385-672.154q-19.461-1.846-33.23-16.23-13.769-14.385-13.769-33.846t14.076-32.922q14.077-13.461 32.923-12.23 120.076 8.692 226.038 58.768 105.961 50.077 185.73 129.846 79.769 79.769 129.846 185.731 50.077 105.961 58.769 226.038 1.231 18.846-12.538 32.922Q756.461-120 736.385-120Zm-252 0q-18.231 0-32.423-13.461t-18.653-33.538Q418.155-264.23 348.886-333.5q-69.27-69.27-166.501-84.423-20.077-4.462-33.538-18.961-13.461-14.5-13.461-33.346 0-19.076 13.884-33.23 13.884-14.153 33.115-10.922 136.769 15.384 234.384 112.999 97.615 97.615 112.999 234.384 3.231 19.23-10.538 33.115Q505.461-120 484.385-120Z"/></svg>
+      </a>
+    
+    <div id="nav-menu-btn" class="nav-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M177.37-252.282q-17.453 0-29.477-11.964-12.024-11.963-12.024-29.326t12.024-29.537q12.024-12.174 29.477-12.174h605.26q17.453 0 29.477 11.964 12.024 11.963 12.024 29.326t-12.024 29.537q-12.024 12.174-29.477 12.174H177.37Zm0-186.218q-17.453 0-29.477-11.963-12.024-11.964-12.024-29.326 0-17.363 12.024-29.537T177.37-521.5h605.26q17.453 0 29.477 11.963 12.024 11.964 12.024 29.326 0 17.363-12.024 29.537T782.63-438.5H177.37Zm0-186.217q-17.453 0-29.477-11.964-12.024-11.963-12.024-29.326t12.024-29.537q12.024-12.174 29.477-12.174h605.26q17.453 0 29.477 11.964 12.024 11.963 12.024 29.326t-12.024 29.537q-12.024 12.174-29.477 12.174H177.37Z"/></svg>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/atom.xml" title="RSS Feed">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">cuttlefish520 </div>
+      <div class="dot"></div>
+      <div class="subtitle">This is the subtitle </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://twitter.com" title="Twitter"><i class="fa-brands fa-twitter"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://store.steampowered.com" title="Steam"><i class="fa-brands fa-steam"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com" title="GitHub"><i class="fa-brands fa-github"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+
+    
+      
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+
+<article id="post-ctfshow web入门基础信息收集" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 itemprop="name">
+        <a class="p-name article-title" href="/2025/12/26/ctfshow%20web%E5%85%A5%E9%97%A8%E5%9F%BA%E7%A1%80%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/">Untitled</a>
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2025-12-26T12:34:11.691Z" itemprop="datePublished">2025-12-26</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+    Uncategorized 
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            4.9k words 
+          </div>
+        </div>
+        
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <h1 id="ctfshow-web入门基础"><a href="#ctfshow-web入门基础" class="headerlink" title="ctfshow web入门基础"></a><code>ctfshow</code> web入门基础</h1><h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p><code>robots.txt</code> 一个非常重要得到文件，通常情况下，主要用于指定搜索引擎蜘蛛spider在网站里的抓取范围,用于声明蜘蛛不可以抓取哪些网站资源及可以抓取哪些网站资源。</p>
+<p><code>php</code>源码泄露 <code>php</code>源码保存在<code>phps</code>,可以通过访问<code>/index.phps</code>来获取。</p>
+<h3 id="web6网站备份漏洞："><a href="#web6网站备份漏洞：" class="headerlink" title="web6网站备份漏洞："></a>web6网站备份漏洞：</h3><p>网站备份压缩文件 漏洞成因:在网站的升级和维护过程中，通常需要对网站中的文件进行修改。此时就需要对网站整站或者其中某一页面进行备份。当备份文件或者修改过程中的缓存文件因为各种原因而被留在网站 web 目录下，而该目录又没有设置访问权限时，便有可能导致备份文件或者编辑器的缓存文件被下载，导致敏感信息泄露，给服务器的安全埋下隐患。<br>该漏洞的成因主要有是管理员将备份文件放在到 web 服务器可以访问的目录下。<br>该漏洞往往会导致服务器整站源代码或者部分页面的源代码被下载，利用。源代码中所包含的各类敏感信息，如服务器数据库连接信息，服务器配置信息等会因此而泄露，造成巨大的损失。<br>被泄露的源代码还可能会被用于代码审计，进一步利用而对整个系统的安全埋下隐患。</p>
+<p>常见<code>www.zip</code></p>
+<h3 id="web7-git"><a href="#web7-git" class="headerlink" title="web7.git"></a>web7.git</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Git是目前世界上最先进的分布式版本控制系统（没有之一）</span><br><span class="line">开发人员在开发时，常常会先把源码提交到远程托管网站（如github），最后再从远程托管网站把源码pull到服务器的web目录下，如果忘记把.git文件删除，就造成此漏洞。利用.git文件恢复网站的源码，而源码里可能会有数据库的信息。</span><br><span class="line">当前大量开发人员使用git进行版本控制，对站点自动部署。 如果配置不当，可能会将.git文件夹直接部署到线上环境，这就引起了git泄露漏洞。</span><br><span class="line">.git源码泄露：采用git管理项目时，上传项目忘记删除.git文件，攻击者可通过该文件恢复源码历史版本，从而造成源码泄露</span><br><span class="line">如何修复</span><br><span class="line"></span><br><span class="line">1.对.git目录的访问权限进行控制</span><br><span class="line">2.在每次pull到web目录下之后删除.git文件夹</span><br></pre></td></tr></table></figure>
+
+<h3 id="web8-svn"><a href="#web8-svn" class="headerlink" title="web8.svn"></a>web8.svn</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">svn信息泄露</span><br><span class="line">SVN（subversion）是程序员常用的源代码版本管理软件。在使用 SVN 管理本地代码过程中，使用 svn checkout 功能来更新代码时，项目目录下会自动生成隐藏的.svn文件夹（Linux上用 ls 命令看不到，要用 ls -al 命令），其中包含重要的源代码信息。</span><br><span class="line">造成SVN源代码漏洞的主要原因是管理员操作不规范，一些网站管理员在发布代码时，不愿意使用“导出”功能，而是直接复制代码文件夹到WEB服务器上，这就使得.svn隐藏文件夹被暴露于外网环境，黑客对此可进一步利用：</span><br><span class="line">可以利用其中包含的用于版本信息追踪的 entries 文件（.svn/entries 文件），获取到服务器源码、svn服务器账号密码等信息；</span><br><span class="line">可以利用 wc.db 数据库文件（.svn/wc.db 文件），获取到一些数据库信息；</span><br><span class="line">更严重的问题在于，SVN产生的.svn目录下还包含了以.svn-base结尾的源代码文件副本（低版本SVN具体路径为text-base目录，高版本SVN为pristine目录），如果服务器没有对此类后缀做解析，则可以直接获得文件源代码。</span><br><span class="line">漏洞修复</span><br><span class="line"></span><br><span class="line">1、不要使用svn checkout和svn up更新服务器上的代码，使用svn export（导出）功能代替；</span><br><span class="line"></span><br><span class="line">2、服务器软件（Nginx、apache、tomcat、IIS等）设置目录权限，禁止访问.svn目录；</span><br><span class="line"></span><br><span class="line">3、删除 /.svn 文件夹，注意，不只svn，git 或者其他版本管理软件也存在类似的问题。</span><br></pre></td></tr></table></figure>
+
+<h3 id="web9-vim缓存"><a href="#web9-vim缓存" class="headerlink" title="web9 vim缓存"></a>web9 vim缓存</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vim缓存导致信息泄露:在使用vim时会创建临时缓存文件，关闭vim时缓存文件则会被删除，当vim异常退出后，因为未处理缓存文件，导致可以通过缓存文件恢复原始文件内容</span><br><span class="line">swp是vim编辑器的临时交换文件，即swap（交换分区）的简写。是一个隐藏文件。用来备份缓冲区的内容，如果未对文件进行修改，是不会产生swp文件的。</span><br><span class="line">以 index.php 为例：</span><br><span class="line">第一次产生的交换文件名为 .index.php.swp</span><br><span class="line"></span><br><span class="line">再次意外退出后，将会产生名为 .index.php.swo 的交换文件</span><br><span class="line"></span><br><span class="line">第三次产生的交换文件则为 .index.php.swn</span><br></pre></td></tr></table></figure>
+
+<p>本题直接访问<code>.index.php.swp</code></p>
+<h3 id="web10-cookie请求头"><a href="#web10-cookie请求头" class="headerlink" title="web10 cookie请求头"></a>web10 cookie请求头</h3><p>cookie一般用于在身份认证的过程中保存一些信息，用于服务器来验证身份</p>
+<h3 id="web11-域名解析查询"><a href="#web11-域名解析查询" class="headerlink" title="web11 域名解析查询"></a>web11 域名解析查询</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">查询域名</span><br><span class="line">查询域名解析地址 基本格式：nslookup host [server]</span><br><span class="line"></span><br><span class="line">查询全部 基本格式：nslookup -query=any host [server]</span><br><span class="line"></span><br><span class="line">查询域名解析:nslookup -qt=类型 目标域名,IP地址</span><br></pre></td></tr></table></figure>
+
+<p>参考文章 <a target="_blank" rel="noopener" href="https://blog.csdn.net/weil5/article/details/141625171?sharetype=blog&shareId=141625171&sharerefer=APP&sharesource=2501_93607131&sharefrom=link">https://blog.csdn.net/weil5/article/details/141625171?sharetype=blog&amp;shareId=141625171&amp;sharerefer=APP&amp;sharesource=2501_93607131&amp;sharefrom=link</a></p>
+<h3 id="web12网站公开信息"><a href="#web12网站公开信息" class="headerlink" title="web12网站公开信息"></a>web12网站公开信息</h3><p>有时网站公开信息可能为管理员密码</p>
+<p>用<code>dirsearch</code>扫描得到<code>/admin</code>,访问后有登录界面。在页面底部有Help Line Number : 372619038，猜测为密码输入获得flag</p>
+<h3 id="web13网站文档"><a href="#web13网站文档" class="headerlink" title="web13网站文档"></a>web13网站文档</h3><p>本题提示：技术文档里面不要出现敏感信息，部署到生产环境后及时修改默认密码</p>
+<p>网站有时会包含一些文档，而这些文档可能含有敏感信息</p>
+<p>本地网页底部找到document文档，找到默认密码和登录地址</p>
+<h3 id="web14editor"><a href="#web14editor" class="headerlink" title="web14editor"></a>web14editor</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">editor很可能指的是一个网页编辑器或者文件编辑器，它在这个上下文中被用作一个功能组件或者服务，允许用户上传、编辑或者管理文件</span><br><span class="line">• 这个“editor”在默认配置下可能存在一个问题：如果指定的上传目录不存在，它会尝试遍历服务器的根目录来查找文件</span><br></pre></td></tr></table></figure>
+
+<p>1.查看源码有一个<code>src=&quot;editor/upload/banner-app.png</code>尝试访问只有&#x2F;editor访问成功</p>
+<p>2.&#x2F;editor页面是编辑器，找到文件空间，查看网站文件</p>
+<p>3找到<code>/var/www/html</code>下有<code>nothinghere</code>，查看其中有<code>fl000g.txt</code></p>
+<p>4.访问<code>/nothinghere/fl000g.txt</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/var/www/html  是 Linux/Unix 系统中 Web 服务器（如 Apache、Nginx）的默认网站根目录，核心用于存放网站的所有可访问文件。</span><br><span class="line"> </span><br><span class="line">具体包括：</span><br><span class="line">- 静态网页文件：HTML、CSS、JavaScript 文件；</span><br><span class="line">- 媒体资源：图片（JPG/PNG）、视频、音频等；</span><br><span class="line">- 动态脚本文件：PHP 程序（若服务器支持 PHP 解析）；</span><br><span class="line">- 网站配置相关文件：如  .htaccess （Apache 配置文件）等。</span><br><span class="line">简单说，只要把网站文件放到这个目录，启动 Web 服务器后，就能通过服务器 IP 或域名访问网站内容了</span><br></pre></td></tr></table></figure>
+
+<h3 id="web15社工"><a href="#web15社工" class="headerlink" title="web15社工"></a>web15社工</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">公开的信息比如邮箱，可能造成信息泄露，产生严重后果</span><br><span class="line"></span><br><span class="line">url/admin是默认的网站系统后台地址</span><br></pre></td></tr></table></figure>
+
+<p>访问<code>/admin</code>进入登陆界面，根据提示网站页面下方有一个qq邮箱，查询后地址西安，忘记密码重置，再次登录admin,密码admin7789</p>
+<h3 id="web16探针泄露（所以用完要删除）"><a href="#web16探针泄露（所以用完要删除）" class="headerlink" title="web16探针泄露（所以用完要删除）"></a>web16探针泄露（所以用完要删除）</h3><p>测试探针参考文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_47804678/article/details/129300460?fromshare=blogdetail&sharetype=blogdetail&sharerId=129300460&sharerefer=PC&sharesource=2501_93607131&sharefrom=from_link">https://blog.csdn.net/qq_47804678/article/details/129300460?fromshare=blogdetail&amp;sharetype=blogdetail&amp;sharerId=129300460&amp;sharerefer=PC&amp;sharesource=2501_93607131&amp;sharefrom=from_link</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">测试探针也是一种用于在计算机网络中监视、诊断和测试网络系统和服务的工具。它能够收集和分析网络数据，以识别性能瓶颈、安全漏洞和应用程序错误等问题。通过监测网络流量，测试探针可以帮助管理员识别网络中的延迟、丢包和带宽问题，而不必依赖网络用户的反馈或其他工具。</span><br><span class="line">php探针是用来探测空间、服务器运行状况和PHP信息用的，探针可以实时查看服务器硬盘资源、内存占用、网卡 流量、系统负载、服务器时间等信息。 url后缀名添加/tz.php 版本是雅黑PHP探针</span><br><span class="line">使用方法</span><br><span class="line">PHP探针的使用方法通常包括以下几个步骤：</span><br><span class="line">下载PHP探针文件到本地电脑。</span><br><span class="line">使用FTP软件将探针文件上传到网站的任意目录中。</span><br><span class="line">绑定域名后，通过类似“域名/探针文件名.php”的网址访问探针。</span><br></pre></td></tr></table></figure>
+
+<p><code>url/tz.php</code>访问探针（雅黑<code>php</code>探针），再点击<code>phpinfo</code>进入界面，找到environment部分找到flag</p>
+<h3 id="web17backuo-sql"><a href="#web17backuo-sql" class="headerlink" title="web17backuo.sql"></a>web17backuo.sql</h3><p>备份的sql文件会泄露敏感信息</p>
+<p>用<code>dirsearch</code>扫描，得到<code>backup.sql</code>.在url后添加&#x2F;<code>buckup.sql</code>获得sql备份文件</p>
+<h3 id="web18分析js代码"><a href="#web18分析js代码" class="headerlink" title="web18分析js代码"></a>web18分析js代码</h3><p><code>f12</code>打开开发者工具查看<code>.js</code>代码发现</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(score&gt;<span class="number">100</span>)&#123;<span class="keyword">var</span> result=<span class="variable language_">window</span>.<span class="title function_">confirm</span>(<span class="string">&quot;\u4f60\u8d62\u4e86\uff0c\u53bb\u5e7a\u5e7a\u96f6\u70b9\u76ae\u7231\u5403\u76ae\u770b\u770b&quot;</span>);&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对<code>\u4f60\u8d62\u4e86\uff0c\u53bb\u5e7a\u5e7a\u96f6\u70b9\u76ae\u7231\u5403\u76ae\u770b\u770b</code>进行uni解码</p>
+<p>得到’<code>你赢了，去幺幺零点皮爱吃皮看看</code>访问<code>110.php</code>获得flag</p>
+<h3 id="web19密钥什么的，就不要放在前端了"><a href="#web19密钥什么的，就不要放在前端了" class="headerlink" title="web19密钥什么的，就不要放在前端了"></a>web19密钥什么的，就不要放在前端了</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">    <span class="title function_">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line">    $flag=<span class="string">&quot;fakeflag&quot;</span></span><br><span class="line">    $u = $_POST[<span class="string">&#x27;username&#x27;</span>];</span><br><span class="line">    $p = $_POST[<span class="string">&#x27;pazzword&#x27;</span>];</span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_">isset</span>($u) &amp;&amp; <span class="title function_">isset</span>($p))&#123;</span><br><span class="line">        <span class="keyword">if</span>($u===<span class="string">&#x27;admin&#x27;</span> &amp;&amp; $p ===<span class="string">&#x27;a599ac85a73384ee3219fa684296eaa62667238d608efa81837030bd1ce1bf04&#x27;</span>)&#123;</span><br><span class="line">            echo $flag;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<p>将<code>a599ac85a73384ee3219fa684296eaa62667238d608efa81837030bd1ce1bf04</code></p>
+<p>直接输入不对，很明显了进行加密。f12调试器查看index发现</p>
+<img src="D:\wwh\Pictures\web19.png" style="zoom: 50%;" />
+
+<p>aes加密 参数 加密模式(mode)CBC  填充方式ZeroPadding  密钥0000000372619038  偏移量ilove36dverymuch</p>
+<img src="D:\wwh\Pictures\屏幕截图 2025-11-16 151332.png" style="zoom: 33%;" />
+
+<p>密码为i_want_a_36d_girl  aes加密参考文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/liKeQing1027520/article/details/137024097?sharetype=blog&shareId=137024097&sharerefer=APP&sharesource=2501_93607131&sharefrom=link">https://blog.csdn.net/liKeQing1027520/article/details/137024097?sharetype=blog&amp;shareId=137024097&amp;sharerefer=APP&amp;sharesource=2501_93607131&amp;sharefrom=link</a></p>
+<h3 id="web20mdb"><a href="#web20mdb" class="headerlink" title="web20mdb"></a>web20mdb</h3><p><code>mdb文件是早期asp+access构架的数据库文件，文件泄露相当于数据库被脱裤了。</code></p>
+<p>第一次扫描</p>
+<p>![](D:\wwh\Pictures\屏幕截图 2025-11-16 171141.png)</p>
+<p>第二次扫&#x2F;db</p>
+<p>![](D:\wwh\Pictures\屏幕截图 2025-11-16 171200.png)</p>
+<p>访问<code>/db/db.mdb</code>下载mdb文件</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3>
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+</article>
+
+
+
+
+
+
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2025 cuttlefish520<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn hide" onclick="topFunction()">
+        <i class="fa-solid fa-angle-up"></i>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.classList.remove('hide')
+        } else {
+            btn.classList.add('hide')
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/js/light-dark-switch.js"></script>
+</body>
+</html>
