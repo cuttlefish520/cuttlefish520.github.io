@@ -1,0 +1,535 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ctfshow SSRF学习 | cuttlefish</title><meta name="author" content="cuttlefish"><meta name="copyright" content="cuttlefish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="ctfshow SSRF https:&#x2F;&#x2F;www.cnblogs.com&#x2F;Antoniiiia&#x2F;p&#x2F;18860617 SSRF漏洞原理攻击与防御(超详细总结)-CSDN博客 SSRF漏洞分析-先知社区  1.什么是SSRF1.1 ssrf漏洞介绍SSRF（Server-Side Request Forgery，服务端请求伪造）是一种网络安全漏洞，攻击者通过该漏洞可以利用服务器端的应用程序发起伪造的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ctfshow SSRF学习">
+<meta property="og:url" content="http://example.com/2026/06/03/ctfshow/ctfshow%20SSRF/index.html">
+<meta property="og:site_name" content="cuttlefish">
+<meta property="og:description" content="ctfshow SSRF https:&#x2F;&#x2F;www.cnblogs.com&#x2F;Antoniiiia&#x2F;p&#x2F;18860617 SSRF漏洞原理攻击与防御(超详细总结)-CSDN博客 SSRF漏洞分析-先知社区  1.什么是SSRF1.1 ssrf漏洞介绍SSRF（Server-Side Request Forgery，服务端请求伪造）是一种网络安全漏洞，攻击者通过该漏洞可以利用服务器端的应用程序发起伪造的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/img/touxiang.jpg">
+<meta property="article:published_time" content="2026-06-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-03T12:15:25.973Z">
+<meta property="article:author" content="cuttlefish">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/touxiang.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ctfshow SSRF学习",
+  "url": "http://example.com/2026/06/03/ctfshow/ctfshow%20SSRF/",
+  "image": "http://example.com/img/touxiang.jpg",
+  "datePublished": "2026-06-02T16:00:00.000Z",
+  "dateModified": "2026-06-03T12:15:25.973Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "cuttlefish",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2026/06/03/ctfshow/ctfshow%20SSRF/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":5,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ctfshow SSRF学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 6.0.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/yemian.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/logo.png" alt="Logo"><span class="site-name">cuttlefish</span></a><a class="nav-page-title" href="/"><span class="site-name">ctfshow SSRF学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div></div></nav><div id="post-info"><h1 class="post-title">ctfshow SSRF学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-06-02T16:00:00.000Z" title="Created 2026-06-03 00:00:00">2026-06-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-06-03T12:15:25.973Z" title="Updated 2026-06-03 20:15:25">2026-06-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ctfshow/">ctfshow</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="ctfshow-SSRF"><a href="#ctfshow-SSRF" class="headerlink" title="ctfshow SSRF"></a>ctfshow SSRF</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/Antoniiiia/p/18860617">https://www.cnblogs.com/Antoniiiia/p/18860617</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43378996/article/details/124050308">SSRF漏洞原理攻击与防御(超详细总结)-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/news/18104">SSRF漏洞分析-先知社区</a></p>
+</blockquote>
+<h2 id="1-什么是SSRF"><a href="#1-什么是SSRF" class="headerlink" title="1.什么是SSRF"></a>1.什么是SSRF</h2><h3 id="1-1-ssrf漏洞介绍"><a href="#1-1-ssrf漏洞介绍" class="headerlink" title="1.1 ssrf漏洞介绍"></a>1.1 ssrf漏洞介绍</h3><p><strong>SSRF</strong>（Server-Side Request Forgery，服务端请求伪造）是一种网络安全漏洞，攻击者通过该漏洞可以利用服务器端的应用程序发起伪造的请求。</p>
+<h3 id="1-2-漏洞原理"><a href="#1-2-漏洞原理" class="headerlink" title="1.2 漏洞原理"></a>1.2 漏洞原理</h3><p>当服务器在接收用户可控的URL或其他资源地址时，没有做严格的限制和过滤。服务器话可以访问这个地址获取资源，就有可能导致ssrf。</p>
+<h4 id="条件"><a href="#条件" class="headerlink" title="条件"></a>条件</h4><ol>
+<li>用户<strong>可控的url</strong>地址</li>
+<li>应用程序可以发起<strong>服务端请求</strong></li>
+<li>应用程序对请求缺乏充分的<strong>验证和限制</strong></li>
+<li>请求要以服务器的<strong>身份和权限</strong>去执行，可以获得内部资源</li>
+</ol>
+<p>一个典型的SSRF漏洞场景：某网站提供在线图片处理功能，允许用户指定图片URL，服务器获取该图片后进行处理。如果该功能未对URL进行严格验证，攻击者可以提供指向内部服务的URL（如<code>http://internal-service:8080/admin</code>），服务器会尝试访问这个内部服务，从而可能泄露敏感信息或触发未授权操作。</p>
+<h3 id="1-3-ssrf的利用"><a href="#1-3-ssrf的利用" class="headerlink" title="1.3 ssrf的利用"></a>1.3 ssrf的利用</h3><h4 id="内网访问"><a href="#内网访问" class="headerlink" title="内网访问"></a>内网访问</h4><p>利用SSRF漏洞访问内网中的Web应用或其他服务。通过构造特定的URL，攻击者可以访问内网中的敏感资源。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?url=http://127.0.0.1/flag.php</span><br></pre></td></tr></table></figure>
+
+<h4 id="302重定向"><a href="#302重定向" class="headerlink" title="302重定向"></a>302重定向</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">header</span>(<span class="string">&quot;Location:http://127.0.0.1/flag.php&quot;</span>,<span class="literal">true</span>,<span class="number">302</span>);<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在网站目录下写一个php文件，url可控的情况下，传入自己的服务器，去访问php文件，触发重定向</p>
+<h3 id="伪协议读取文件"><a href="#伪协议读取文件" class="headerlink" title="伪协议读取文件"></a>伪协议读取文件</h3><p>利用PHP伪协议读取本地文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?url=file:///var/www/html/flag.php</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="1-4-一些绕过"><a href="#1-4-一些绕过" class="headerlink" title="1.4 一些绕过"></a>1.4 一些绕过</h3><h4 id="IP转换"><a href="#IP转换" class="headerlink" title="IP转换"></a>IP转换</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1</span><br><span class="line">八进制：0177.0.0.1</span><br><span class="line">十六进制：0x7f.0.0.1</span><br><span class="line">十进制：2130706433</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="sudo-cc"><a href="#sudo-cc" class="headerlink" title="sudo.cc"></a>sudo.cc</h4><p>sudo.cc是一个域名，但作用类似于127.0.0.1，即指向本地回环地址.</p>
+<h4 id="关于回环地址"><a href="#关于回环地址" class="headerlink" title="关于回环地址"></a>关于回环地址</h4><p>在IPv4中，<strong>127.0.0.1~127.255.255.254</strong>都是本地回环地址的范围，有时候只针对127.0.0.1进行了过滤，还可以用其他地址.</p>
+<h4 id="域名解析"><a href="#域名解析" class="headerlink" title="域名解析"></a>域名解析</h4><p>其实和sudo.cc是一样的，但这还有一些，大厂的域名可解析到127.0.0.1，见<a target="_blank" rel="noopener" href="https://blog.csdn.net/lovelyelfpop/article/details/107306577">一些公共 http 域名，但是解析到 127.0.0.1_可以被解析为127.0.0.1的域名-CSDN博客</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">http://safe.taobao.com/</span><br><span class="line"></span><br><span class="line">http://114.taobao.com/</span><br><span class="line"></span><br><span class="line">http://wifi.aliyun.com/</span><br><span class="line"></span><br><span class="line">http://imis.qq.com/</span><br><span class="line"></span><br><span class="line">http://localhost.sec.qq.com/</span><br><span class="line"></span><br><span class="line">http://ecd.tencent.com/</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="0在Linux系统的解析"><a href="#0在Linux系统的解析" class="headerlink" title="0在Linux系统的解析"></a>0在Linux系统的解析</h4><p>0在linux系统中会解析成127.0.0.1，但在windows中会解析成0.0.0.0。</p>
+<h4 id="省略0"><a href="#省略0" class="headerlink" title="省略0"></a>省略0</h4><p>127.1也是可以解析成127.0.0.1</p>
+<p>特殊符号</p>
+<p><strong>@</strong>：作为身份分隔符，@前面的内容都是身份认证部分比如<code>http://acb@127.0.0.1</code>服务器还是会访问@后面的，前面只做身份验证</p>
+<p><strong>#</strong> ：是片段标识符，#后面的所有内容都是客户端本地的锚点，永远不会被发送到服务器。</p>
+<p><strong>?</strong>： 是查询参数分隔符，**?**后面的内容是 URL 的查询参数。</p>
+<h2 id="2-ctfshow"><a href="#2-ctfshow" class="headerlink" title="2.ctfshow"></a>2.ctfshow</h2><h3 id="ctfshow351-内网访问"><a href="#ctfshow351-内网访问" class="headerlink" title="ctfshow351&#x2F;内网访问"></a>ctfshow351&#x2F;内网访问</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$ch</span>=<span class="title function_ invoke__">curl_init</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">curl_exec</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_close</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="keyword">echo</span> (<span class="variable">$result</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="php-curl"><a href="#php-curl" class="headerlink" title="php curl"></a>php curl</h4><p>PHP支持的由Daniel Stenberg创建的libcurl库允许你与各种的服务器使用各种类型的协议进行连接和通讯。</p>
+<p>关于curl库的函数</p>
+<table>
+<thead>
+<tr>
+<th align="left">函数</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_close.html">curl_close()</a></td>
+<td align="left">关闭一个cURL会话。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_copy_handle.html">curl_copy_handle()</a></td>
+<td align="left">复制一个cURL句柄和它的所有选项。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_errno.html">curl_errno()</a></td>
+<td align="left">返回最后一次的错误号。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_error.html">curl_error()</a></td>
+<td align="left">返回一个保护当前会话最近一次错误的字符串。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_escape.html">curl_escape()</a></td>
+<td align="left">返回转义字符串，对给定的字符串进行URL编码。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_exec.html">curl_exec()</a></td>
+<td align="left">执行一个cURL会话。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_file_create.html">curl_file_create()</a></td>
+<td align="left">创建一个 CURLFile 对象。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_getinfo.html">curl_getinfo()</a></td>
+<td align="left">获取一个cURL连接资源句柄的信息。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_init.html">curl_init()</a></td>
+<td align="left">初始化一个cURL会话。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_add_handle.html">curl_multi_add_handle()</a></td>
+<td align="left">向curl批处理会话中添加单独的curl句柄。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_close.html">curl_multi_close()</a></td>
+<td align="left">关闭一组cURL句柄。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_exec.html">curl_multi_exec()</a></td>
+<td align="left">运行当前 cURL 句柄的子连接。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_getcontent.html">curl_multi_getcontent()</a></td>
+<td align="left">如果设置了CURLOPT_RETURNTRANSFER，则返回获取的输出的文本流。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_info_read.html">curl_multi_info_read()</a></td>
+<td align="left">获取当前解析的cURL的相关传输信息。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_init.html">curl_multi_init()</a></td>
+<td align="left">返回一个新cURL批处理句柄。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_remove_handle.html">curl_multi_remove_handle()</a></td>
+<td align="left">移除curl批处理句柄资源中的某个句柄资源。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_select.html">curl_multi_select()</a></td>
+<td align="left">等待所有cURL批处理中的活动连接。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_setopt.html">curl_multi_setopt()</a></td>
+<td align="left">设置一个批处理cURL传输选项。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_multi_strerror.html">curl_multi_strerror()</a></td>
+<td align="left">返回描述错误码的字符串文本。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_pause.html">curl_pause()</a></td>
+<td align="left">暂停及恢复连接。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_reset.html">curl_reset()</a></td>
+<td align="left">重置libcurl的会话句柄的所有选项。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_setopt_array.html">curl_setopt_array()</a></td>
+<td align="left">为cURL传输会话批量设置选项。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_setopt.html">curl_setopt()</a></td>
+<td align="left">设置一个cURL传输选项。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_share_close.html">curl_share_close()</a></td>
+<td align="left">关闭cURL共享句柄。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_share_init.html">curl_share_init()</a></td>
+<td align="left">初始化cURL共享句柄。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_share_setopt.html">curl_share_setopt()</a></td>
+<td align="left">设置一个共享句柄的cURL传输选项。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_strerror.html">curl_strerror()</a></td>
+<td align="left">返回错误代码的字符串描述。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_unescape.html">curl_unescape()</a></td>
+<td align="left">解码URL编码后的字符串。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_version.html">curl_version()</a></td>
+<td align="left">获取cURL版本信息。</td>
+</tr>
+</tbody></table>
+<p>再来具体看一下<strong>curl_setopt</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool curl_setopt ( resource $ch , int $option , mixed $value )</span><br></pre></td></tr></table></figure>
+
+<p>为给定的cURL会话句柄设置一个选项。</p>
+<p>ch就是<strong>curl_init()<strong>返回的初始会话，</strong>$option</strong>参数有许多可以设置的配置，比如这里的就是设置<strong>CURLOPT_HEADER</strong>，启用时会将头文件的信息作为数据流输出。那$value为0就是关闭这个功能，</p>
+<p><strong>CURLOPT_RETURNTRANSFER</strong>就是将curl_exec()获取的信息以文件流的形式返回，而不是直接输出。</p>
+<p>这里是开启的状态，但不是所以配置设置的value都是01布尔值，还有许多类型可见官方文档或<a target="_blank" rel="noopener" href="https://www.runoob.com/php/func-curl_setopt.html">PHP curl_setopt函数 | 菜鸟教程</a></p>
+<p>那这里url可控，直接访问内网地址<code>http://127.0.0.1/flag.php</code></p>
+<h3 id="ctfshow352-绕过"><a href="#ctfshow352-绕过" class="headerlink" title="ctfshow352&#x2F;绕过"></a>ctfshow352&#x2F;绕过</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$x</span>=<span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;http&#x27;</span>||<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;https&#x27;</span>)&#123;</span><br><span class="line"><span class="keyword">if</span>(!<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/localhost|127.0.0/&#x27;</span>))&#123;</span><br><span class="line"><span class="variable">$ch</span>=<span class="title function_ invoke__">curl_init</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">curl_exec</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_close</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="keyword">echo</span> (<span class="variable">$result</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span> hacker</span><br></pre></td></tr></table></figure>
+
+<h4 id="parse-url"><a href="#parse-url" class="headerlink" title="parse_url"></a>parse_url</h4><p>parse_url() 是 PHP 内置的 <strong>URL 解析函数</strong>，可将 URL 拆分为协议、主机、端口、路径、查询参数等部分，返回关联数组或单个组件。</p>
+<p>比如</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$url</span> = <span class="string">&#x27;http://username:password@hostname:9090/path?arg=value#anchor&#x27;</span>;</span><br><span class="line"><span class="comment">// 返回完整解析数组</span></span><br><span class="line"><span class="title function_ invoke__">print_r</span>(<span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>));</span><br><span class="line"><span class="comment">// 仅获取主机名</span></span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>, PHP_URL_HOST);</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Array</span><br><span class="line">(</span><br><span class="line">   [scheme] =&gt; http</span><br><span class="line">   [host] =&gt; hostname</span><br><span class="line">   [port] =&gt; 9090</span><br><span class="line">   [user] =&gt; username</span><br><span class="line">   [pass] =&gt; password</span><br><span class="line">   [path] =&gt; /path</span><br><span class="line">   [query] =&gt; arg=value</span><br><span class="line">   [fragment] =&gt; anchor</span><br><span class="line">)</span><br><span class="line">hostname</span><br></pre></td></tr></table></figure>
+
+<p>那这里内网被过滤了，看一些绕过方法</p>
+<p> IP格式转换，要参http,https还不行，没搞懂啥意思</p>
+<h3 id="ctfshow353"><a href="#ctfshow353" class="headerlink" title="ctfshow353"></a>ctfshow353</h3><p>十进制绕过就行</p>
+<h3 id="ctfshow354-解析域名"><a href="#ctfshow354-解析域名" class="headerlink" title="ctfshow354&#x2F;解析域名"></a>ctfshow354&#x2F;解析域名</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> &lt;?php</span><br><span class="line"><span class="title function_">error_reporting</span><span class="params">(<span class="number">0</span>)</span>;</span><br><span class="line">highlight_file(__FILE__);</span><br><span class="line">$url=$_POST[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line">$x=parse_url($url);</span><br><span class="line"><span class="keyword">if</span>($x[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;http&#x27;</span>||$x[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;https&#x27;</span>)&#123;</span><br><span class="line"><span class="keyword">if</span>(!preg_match(<span class="string">&#x27;/localhost|1|0|。/i&#x27;</span>, $url))&#123;</span><br><span class="line">$ch=curl_init($url);</span><br><span class="line">curl_setopt($ch, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line">curl_setopt($ch, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line">$result=curl_exec($ch);</span><br><span class="line">curl_close($ch);</span><br><span class="line">echo ($result);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    die(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    die(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line">?&gt; hacker</span><br></pre></td></tr></table></figure>
+
+<p>域名解析绕过</p>
+<h3 id="ctfshow355-省略0绕过"><a href="#ctfshow355-省略0绕过" class="headerlink" title="ctfshow355&#x2F;省略0绕过"></a>ctfshow355&#x2F;省略0绕过</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$x</span>=<span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;http&#x27;</span>||<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;https&#x27;</span>)&#123;</span><br><span class="line"><span class="variable">$host</span>=<span class="variable">$x</span>[<span class="string">&#x27;host&#x27;</span>];</span><br><span class="line"><span class="keyword">if</span>((<span class="title function_ invoke__">strlen</span>(<span class="variable">$host</span>)&lt;=<span class="number">5</span>))&#123;</span><br><span class="line"><span class="variable">$ch</span>=<span class="title function_ invoke__">curl_init</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">curl_exec</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_close</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="keyword">echo</span> (<span class="variable">$result</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里限制了hostname的长度，那127.0.0.1就不能传了，传127.1</p>
+<h3 id="ctfshow356"><a href="#ctfshow356" class="headerlink" title="ctfshow356"></a>ctfshow356</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$x</span>=<span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;http&#x27;</span>||<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;https&#x27;</span>)&#123;</span><br><span class="line"><span class="variable">$host</span>=<span class="variable">$x</span>[<span class="string">&#x27;host&#x27;</span>];</span><br><span class="line"><span class="keyword">if</span>((<span class="title function_ invoke__">strlen</span>(<span class="variable">$host</span>)&lt;=<span class="number">3</span>))&#123;</span><br><span class="line"><span class="variable">$ch</span>=<span class="title function_ invoke__">curl_init</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_HEADER, <span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span>);</span><br><span class="line"><span class="variable">$result</span>=<span class="title function_ invoke__">curl_exec</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="title function_ invoke__">curl_close</span>(<span class="variable">$ch</span>);</span><br><span class="line"><span class="keyword">echo</span> (<span class="variable">$result</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;hacker&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>url&#x3D;<a target="_blank" rel="noopener" href="http://0.0.0.0/flag.php">http://0/flag.php</a></p>
+<h3 id="ctfshow357"><a href="#ctfshow357" class="headerlink" title="ctfshow357"></a>ctfshow357</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$x</span>=<span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;http&#x27;</span>||<span class="variable">$x</span>[<span class="string">&#x27;scheme&#x27;</span>]===<span class="string">&#x27;https&#x27;</span>)&#123;</span><br><span class="line"><span class="variable">$ip</span> = <span class="title function_ invoke__">gethostbyname</span>(<span class="variable">$x</span>[<span class="string">&#x27;host&#x27;</span>]);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;&lt;/br&gt;&#x27;</span>.<span class="variable">$ip</span>.<span class="string">&#x27;&lt;/br&gt;&#x27;</span>;</span><br><span class="line"><span class="keyword">if</span>(!<span class="title function_ invoke__">filter_var</span>(<span class="variable">$ip</span>, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;ip!&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">&#x27;scheme&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span> scheme</span><br></pre></td></tr></table></figure>
+
+<p>解释一下出现的函数和参数</p>
+<h4 id="gethostbyname"><a href="#gethostbyname" class="headerlink" title="gethostbyname()"></a>gethostbyname()</h4><p><strong>gethostbyname()</strong> 函数用于将主机名（域名）转换为对应的 IP 地址。在网络编程中，这个函数非常有用，因为它可以帮助我们通过域名获取服务器的 IP 地址，从而进行网络通信。</p>
+<h4 id="filter-var"><a href="#filter-var" class="headerlink" title="filter_var()"></a>filter_var()</h4><p><strong>filter_var</strong>函数是PHP中用于过滤变量的功能强大的工具。它可以使用指定的过滤器来清理或验证输入数据，确保数据符合预期的格式或标准。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mixed filter_var ( mixed $variable, int $filter = FILTER_DEFAULT, mixed $options = 0 )</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>$variable</strong>必须参数，需要过滤处理的变量</li>
+<li><strong>$filter</strong>可选，过滤器id字段，默认使用<strong>FILTER_DEFAULT</strong>，相当于<strong>FILTER_UNSAFE_RAW</strong>，默认情况下不进行过滤。</li>
+<li><strong>$options</strong>可选，可做一些过滤器的配置，精细控制过滤器的行为。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">ID 名称</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-callback.html">FILTER_CALLBACK</a></td>
+<td align="left">调用用户自定义函数来过滤数据。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-string.html">FILTER_SANITIZE_STRING</a></td>
+<td align="left">去除标签，去除或编码特殊字符。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-stripped.html">FILTER_SANITIZE_STRIPPED</a></td>
+<td align="left">“string” 过滤器的别名。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-encoded.html">FILTER_SANITIZE_ENCODED</a></td>
+<td align="left">URL-encode 字符串，去除或编码特殊字符。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-special-chars.html">FILTER_SANITIZE_SPECIAL_CHARS</a></td>
+<td align="left">HTML 转义字符 ‘“&lt;&gt;&amp; 以及 ASCII 值小于 32 的字符。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-email.html">FILTER_SANITIZE_EMAIL</a></td>
+<td align="left">删除所有字符，除了字母、数字以及 !#$%&amp;’*+-&#x2F;&#x3D;?^_&#96;{|}~@.[]</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-url.html">FILTER_SANITIZE_URL</a></td>
+<td align="left">删除所有字符，除了字母、数字以及 $-_.+!*’(),{}|^~[]&#96;&lt;&gt;#%”;&#x2F;?:@&amp;&#x3D;</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-number-int.html">FILTER_SANITIZE_NUMBER_INT</a></td>
+<td align="left">删除所有字符，除了数字和 +-</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-number-float.html">FILTER_SANITIZE_NUMBER_FLOAT</a></td>
+<td align="left">删除所有字符，除了数字、+- 以及 .,eE</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-sanitize-magic-quotes.html">FILTER_SANITIZE_MAGIC_QUOTES</a></td>
+<td align="left">应用 addslashes()。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-unsafe-raw.html">FILTER_UNSAFE_RAW</a></td>
+<td align="left">不进行任何过滤，去除或编码特殊字符。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-int.html">FILTER_VALIDATE_INT</a></td>
+<td align="left">把值作为整数来验证。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-boolean.html">FILTER_VALIDATE_BOOLEAN</a></td>
+<td align="left">把值作为布尔选项来验证。如果是 “1”、”true”、”on” 和 “yes”，则返回 TRUE。如果是 “0”、”false”、”off”、”no” 和 “”，则返回 FALSE。否则返回 NULL。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-float.html">FILTER_VALIDATE_FLOAT</a></td>
+<td align="left">把值作为浮点数来验证。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-regexp.html">FILTER_VALIDATE_REGEXP</a></td>
+<td align="left">根据 regexp（一种兼容 Perl 的正则表达式）来验证值。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-url.html">FILTER_VALIDATE_URL</a></td>
+<td align="left">把值作为 URL 来验证。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-email.html">FILTER_VALIDATE_EMAIL</a></td>
+<td align="left">把值作为 e-mail 地址来验证。</td>
+</tr>
+<tr>
+<td align="left"><a target="_blank" rel="noopener" href="https://www.runoob.com/php/filter-validate-ip.html">FILTER_VALIDATE_IP</a></td>
+<td align="left">把值作为 IP 地址来验证，只限 IPv4 或 IPv6 或 不是来自私有或者保留的范围。</td>
+</tr>
+</tbody></table>
+<h4 id="FILTER-FLAG-NO-PRIV-RANGE"><a href="#FILTER-FLAG-NO-PRIV-RANGE" class="headerlink" title="FILTER_FLAG_NO_PRIV_RANGE"></a>FILTER_FLAG_NO_PRIV_RANGE</h4><p>拒绝私有内网 IP 段</p>
+<table>
+<thead>
+<tr>
+<th>IP 版本</th>
+<th>被拒绝的私有段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IPv4</td>
+<td><code>10.0.0.0/8</code></td>
+<td>A 类私有地址</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td><code>172.16.0.0/12</code></td>
+<td>B 类私有地址（172.16.0.0 ~ 172.31.255.255）</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td><code>192.168.0.0/16</code></td>
+<td>C 类私有地址</td>
+</tr>
+<tr>
+<td>IPv6</td>
+<td><code>fc00::/7</code></td>
+<td>IPv6 唯一本地地址（ULA）</td>
+</tr>
+</tbody></table>
+<h4 id="FILTER-FLAG-NO-RES-RANGE"><a href="#FILTER-FLAG-NO-RES-RANGE" class="headerlink" title="FILTER_FLAG_NO_RES_RANGE"></a>FILTER_FLAG_NO_RES_RANGE</h4><p>会拒绝以下所有 RFC 定义的保留和特殊用途 IP</p>
+<table>
+<thead>
+<tr>
+<th>IP 版本</th>
+<th>被拒绝的保留段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IPv4</td>
+<td><code>127.0.0.0/8</code></td>
+<td>回环地址（包括<code>127.1</code>、<code>127.0.0.1</code>等所有变形）</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td><code>169.254.0.0/16</code></td>
+<td>链路本地地址（自动配置失败时的地址）</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td><code>0.0.0.0/8</code></td>
+<td>本网络地址</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td><code>255.255.255.255/32</code></td>
+<td>广播地址</td>
+</tr>
+<tr>
+<td>IPv6</td>
+<td><code>::1/128</code></td>
+<td>IPv6 回环地址</td>
+</tr>
+<tr>
+<td>IPv6</td>
+<td><code>fe80::/10</code></td>
+<td>IPv6 链路本地地址</td>
+</tr>
+</tbody></table>
+<p>那这里把内网禁了，就用302重定向</p>
+<p>本地写一个重定向代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">header</span>(<span class="string">&quot;Location:http://127.0.0.1/flag.php&quot;</span>,<span class="literal">true</span>,<span class="number">302</span>);<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上传到网站目录上</p>
+<p>然后url&#x3D;http:&#x2F;&#x2F;网站地址或域名&#x2F;php文件</p>
+<h3 id="ctfshow358"><a href="#ctfshow358" class="headerlink" title="ctfshow358"></a>ctfshow358</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">error_reporting</span>(<span class="number">0</span>);</span><br><span class="line"><span class="title function_ invoke__">highlight_file</span>(<span class="keyword">__FILE__</span>);</span><br><span class="line"><span class="variable">$url</span>=<span class="variable">$_POST</span>[<span class="string">&#x27;url&#x27;</span>];</span><br><span class="line"><span class="variable">$x</span>=<span class="title function_ invoke__">parse_url</span>(<span class="variable">$url</span>);</span><br><span class="line"><span class="keyword">if</span>(<span class="title function_ invoke__">preg_match</span>(<span class="string">&#x27;/^http:\/\/ctf\..*show$/i&#x27;</span>,<span class="variable">$url</span>))&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="title function_ invoke__">file_get_contents</span>(<span class="variable">$url</span>);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>**file_get_contents()**实现写入文件的功能，如果是指定url就是获得url地址的资源</p>
+<p>这里匹配要求，开头是<code>http://ctf.</code>,结尾是<code>show</code>.</p>
+<p>可以用特殊字符<code>@</code>和<code>#</code>绕过</p>
+<p>url&#x3D;<code>http://ctf.@127.0.0.1/flag.php#show</code></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">cuttlefish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/06/03/ctfshow/ctfshow%20SSRF/">http://example.com/2026/06/03/ctfshow/ctfshow%20SSRF/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/touxiang.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/06/02/javapoc/javacc6/" title="java cc6"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">java cc6</div></div><div class="info-2"><div class="info-item-1">java cc6 Java反序列化利用链篇 | CC6链分析（通用版CC链） - leyilea - 博客园 Java反序列化CC6链 | root@wanth3f1ag  CC6先学一下cc6因为cc6链的可利用范围更广，比cc1通用 cc6链的出口与cc1一样 1234567891011ChainedTransformer.transform()                                ConstantTransformer.transform()                                InvokerTransformer.transform()                                    Method.invoke()                                        Class.getMethod()                                InvokerTransformer.transform()                          ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">cuttlefish</div><div class="author-info-description">遇事不决，可问春风，春风不语，即随本心。</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/cuttlefish520"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">欢迎来到我的博客！在这里，我将分享我的技术心得、学习笔记和生活点滴。希望我的博客能为你提供有价值的信息和启发。如果你喜欢我的内容，请随时关注和留言交流！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ctfshow-SSRF"><span class="toc-number">1.</span> <span class="toc-text">ctfshow SSRF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AFSSRF"><span class="toc-number">1.1.</span> <span class="toc-text">1.什么是SSRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-ssrf%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 ssrf漏洞介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.2 漏洞原理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">条件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-ssrf%E7%9A%84%E5%88%A9%E7%94%A8"><span class="toc-number">1.1.3.</span> <span class="toc-text">1.3 ssrf的利用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E8%AE%BF%E9%97%AE"><span class="toc-number">1.1.3.1.</span> <span class="toc-text">内网访问</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#302%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number">1.1.3.2.</span> <span class="toc-text">302重定向</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%AA%E5%8D%8F%E8%AE%AE%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.4.</span> <span class="toc-text">伪协议读取文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E4%B8%80%E4%BA%9B%E7%BB%95%E8%BF%87"><span class="toc-number">1.1.5.</span> <span class="toc-text">1.4 一些绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#IP%E8%BD%AC%E6%8D%A2"><span class="toc-number">1.1.5.1.</span> <span class="toc-text">IP转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#sudo-cc"><span class="toc-number">1.1.5.2.</span> <span class="toc-text">sudo.cc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E5%9B%9E%E7%8E%AF%E5%9C%B0%E5%9D%80"><span class="toc-number">1.1.5.3.</span> <span class="toc-text">关于回环地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90"><span class="toc-number">1.1.5.4.</span> <span class="toc-text">域名解析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0%E5%9C%A8Linux%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%A7%A3%E6%9E%90"><span class="toc-number">1.1.5.5.</span> <span class="toc-text">0在Linux系统的解析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9C%81%E7%95%A50"><span class="toc-number">1.1.5.6.</span> <span class="toc-text">省略0</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ctfshow"><span class="toc-number">1.2.</span> <span class="toc-text">2.ctfshow</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow351-%E5%86%85%E7%BD%91%E8%AE%BF%E9%97%AE"><span class="toc-number">1.2.1.</span> <span class="toc-text">ctfshow351&#x2F;内网访问</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#php-curl"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">php curl</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow352-%E7%BB%95%E8%BF%87"><span class="toc-number">1.2.2.</span> <span class="toc-text">ctfshow352&#x2F;绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#parse-url"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">parse_url</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow353"><span class="toc-number">1.2.3.</span> <span class="toc-text">ctfshow353</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow354-%E8%A7%A3%E6%9E%90%E5%9F%9F%E5%90%8D"><span class="toc-number">1.2.4.</span> <span class="toc-text">ctfshow354&#x2F;解析域名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow355-%E7%9C%81%E7%95%A50%E7%BB%95%E8%BF%87"><span class="toc-number">1.2.5.</span> <span class="toc-text">ctfshow355&#x2F;省略0绕过</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow356"><span class="toc-number">1.2.6.</span> <span class="toc-text">ctfshow356</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow357"><span class="toc-number">1.2.7.</span> <span class="toc-text">ctfshow357</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#gethostbyname"><span class="toc-number">1.2.7.1.</span> <span class="toc-text">gethostbyname()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#filter-var"><span class="toc-number">1.2.7.2.</span> <span class="toc-text">filter_var()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FILTER-FLAG-NO-PRIV-RANGE"><span class="toc-number">1.2.7.3.</span> <span class="toc-text">FILTER_FLAG_NO_PRIV_RANGE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FILTER-FLAG-NO-RES-RANGE"><span class="toc-number">1.2.7.4.</span> <span class="toc-text">FILTER_FLAG_NO_RES_RANGE</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ctfshow358"><span class="toc-number">1.2.8.</span> <span class="toc-text">ctfshow358</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/03/ctfshow/ctfshow%20SSRF/" title="ctfshow SSRF学习">ctfshow SSRF学习</a><time datetime="2026-06-02T16:00:00.000Z" title="Created 2026-06-03 00:00:00">2026-06-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/02/javapoc/javacc6/" title="java cc6">java cc6</a><time datetime="2026-06-01T16:00:00.000Z" title="Created 2026-06-02 00:00:00">2026-06-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/01/ctfshow/ctfshowJWT/" title="ctfshowJWT学习">ctfshowJWT学习</a><time datetime="2026-05-31T16:00:00.000Z" title="Created 2026-06-01 00:00:00">2026-06-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/29/javapoc/javacc1/" title="java cc1">java cc1</a><time datetime="2026-05-28T16:00:00.000Z" title="Created 2026-05-29 00:00:00">2026-05-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/29/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/" title="java反序列化基础">java反序列化基础</a><time datetime="2026-05-28T16:00:00.000Z" title="Created 2026-05-29 00:00:00">2026-05-29</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By cuttlefish</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 6.0.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="输入关键字" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
