@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Phar反序列化 | cuttlefish</title><meta name="author" content="cuttlefish"><meta name="copyright" content="cuttlefish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="Phar反序列化 浅析Phar反序列化 - FreeBuf网络安全行业门户 phar反序列化+两道CTF例题_ctf phar-CSDN博客 利用 phar 拓展 php 反序列化漏洞攻击面 - Paper  什么是PharPhar是php语言的一种打包技术，和java语言的jar包类似。Phar文件有一个特点，会将存的内容以反序列化的形式储存，然后配合文件操作函数和phar:&#x2F;&#x2F;协议使用，可以有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Phar反序列化">
+<meta property="og:url" content="https://cuttlefish520.github.io/2026/10/20/Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/index.html">
+<meta property="og:site_name" content="cuttlefish">
+<meta property="og:description" content="Phar反序列化 浅析Phar反序列化 - FreeBuf网络安全行业门户 phar反序列化+两道CTF例题_ctf phar-CSDN博客 利用 phar 拓展 php 反序列化漏洞攻击面 - Paper  什么是PharPhar是php语言的一种打包技术，和java语言的jar包类似。Phar文件有一个特点，会将存的内容以反序列化的形式储存，然后配合文件操作函数和phar:&#x2F;&#x2F;协议使用，可以有">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cuttlefish520.github.io/img/touxiang.jpg">
+<meta property="article:published_time" content="2026-10-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-20T15:09:40.299Z">
+<meta property="article:author" content="cuttlefish">
+<meta property="article:tag" content="php">
+<meta property="article:tag" content="Phar">
+<meta property="article:tag" content="反序列化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cuttlefish520.github.io/img/touxiang.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Phar反序列化",
+  "url": "https://cuttlefish520.github.io/2026/10/20/Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/",
+  "image": "https://cuttlefish520.github.io/img/touxiang.jpg",
+  "datePublished": "2026-10-19T16:00:00.000Z",
+  "dateModified": "2026-10-20T15:09:40.299Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "cuttlefish",
+      "url": "https://cuttlefish520.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://cuttlefish520.github.io/2026/10/20/Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":5,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Phar反序列化',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 6.0.0"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/yemian.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/logo.png" alt="Logo"><span class="site-name">cuttlefish</span></a><a class="nav-page-title" href="/"><span class="site-name">Phar反序列化</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div></div></nav><div id="post-info"><h1 class="post-title">Phar反序列化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-10-19T16:00:00.000Z" title="Created 2026-10-20 00:00:00">2026-10-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-10-20T15:09:40.299Z" title="Updated 2026-10-20 23:09:40">2026-10-20</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Phar反序列化"><a href="#Phar反序列化" class="headerlink" title="Phar反序列化"></a>Phar反序列化</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/305292.html">浅析Phar反序列化 - FreeBuf网络安全行业门户</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/unexpectedthing/article/details/122930867">phar反序列化+两道CTF例题_ctf phar-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://paper.seebug.org/680">利用 phar 拓展 php 反序列化漏洞攻击面 - Paper</a></p>
+</blockquote>
+<h2 id="什么是Phar"><a href="#什么是Phar" class="headerlink" title="什么是Phar"></a>什么是Phar</h2><p>Phar是php语言的一种打包技术，和java语言的jar包类似。Phar文件有一个特点，会将存的内容以反序列化的形式储存，然后配合文件操作函数和<code>phar://</code>协议使用，可以有反序列化的效果。</p>
+<p><strong>phar结构</strong></p>
+<p><strong>存根(Stub)</strong>:存根是 PHAR 文件的入口引导段，也是 PHP 识别 PHAR 格式的核心标识之一。<code>&lt;?php __HALT_COMPILER();?&gt;</code>但实际phar只要求以<code>__HALT_COMPILER();?&gt;</code>,在这里可以前面拼一些其他文件头标识，来实现一些绕过。比如<code>GIF89a</code></p>
+<p><strong>清单(Manifest)</strong>:是 PHAR 的核心元数据区，存储归档的所有描述信息，以 PHP <code>serialize()</code> 序列化格式存储。这也是Phar反序列化触发点</p>
+<p><strong>文件内容(File Contents)</strong>:按照 Manifest 中文件条目的顺序，依次存储每个文件的实际内容。</p>
+<p><strong>签名(Signature可选)</strong>:位于 PHAR 文件的最末尾，用于验证文件完整性</p>
+<p>写一个test看一下</p>
+<p><img src="/img/314.png" alt="图片" title="314"></p>
+<p>先去php.ini打开配置</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Test</span></span>&#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-variable">$no</span> = <span class="hljs-number">123</span>;<br>&#125;<br><span class="hljs-variable">$phar</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Phar</span>(<span class="hljs-string">&quot;test.phar&quot;</span>);<br><span class="hljs-variable">$phar</span>-&gt;<span class="hljs-title function_ invoke__">startBuffering</span>();<br><span class="hljs-variable">$phar</span>-&gt;<span class="hljs-title function_ invoke__">setStub</span>(<span class="hljs-string">&quot;GIF89a&quot;</span>.<span class="hljs-string">&quot;&lt;?php __HALT_COMPILER(); ?&gt;&quot;</span>);<br><span class="hljs-variable">$o</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Test</span>();<br><span class="hljs-variable">$phar</span>-&gt;<span class="hljs-title function_ invoke__">setMetadata</span>(<span class="hljs-variable">$o</span>);<br><span class="hljs-variable">$phar</span>-&gt;<span class="hljs-title function_ invoke__">addFromString</span>(<span class="hljs-string">&quot;test.txt&quot;</span>, <span class="hljs-string">&quot;test&quot;</span>);<br><span class="hljs-comment">//自动计算签名</span><br><span class="hljs-variable">$phar</span>-&gt;<span class="hljs-title function_ invoke__">stopBuffering</span>();<br><br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>可以用编辑器打开文件看一下</p>
+<p><img src="/img/315.png" alt="图片" title="315"></p>
+<p>当文件操作函数的参数可控的时候，配合phar:&#x2F;&#x2F;协议，可以不依靠<code>unserialize()</code>来完成反序列化操作，这里就涉及到一个底层c语言代码了，就不看了。</p>
+<p><img src="/img/316.png" alt="图片" title="316"></p>
+<p>用file_get_contents()来测试一下。</p>
+<p><img src="/img/317.png" alt="图片" title="317"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Test</span></span>&#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-variable">$no</span> ;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__destruct</span>(<span class="hljs-params"></span>)</span>&#123;<br>        <span class="hljs-keyword">eval</span>(<span class="hljs-variable language_">$this</span>-&gt;no);<br>    &#125;<br><br><br>&#125;<br><br><span class="hljs-keyword">echo</span> <span class="hljs-title function_ invoke__">file_get_contents</span>(<span class="hljs-string">&quot;phar://test.phar/test.txt&quot;</span>);<br><br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="/img/319.png" alt="图片" title="319"></p>
+<p>成功了，这里在做的时候遇到一个问题，php在8.0之后，就不在自动反序列化Phar文件了，需要在读取文件前加：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-variable">$phar</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Phar</span>(<span class="hljs-keyword">__DIR__</span> . <span class="hljs-string">&#x27;/test.phar&#x27;</span>);<br><span class="hljs-variable">$metadata</span> = <span class="hljs-variable">$phar</span>-&gt;<span class="hljs-title function_ invoke__">getMetadata</span>();<br></code></pre></td></tr></table></figure>
+
+<p><code>getMetadata()</code> 才会显式反序列化归档元数据</p>
+<h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">phar可以上传到服务器端(存在文件上传)<br><br>要有可用的魔术方法作为“跳板”。<br><br>文件操作函数的参数可控，且:、/、phar等特殊字符没有被过滤<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="HNCTF-2022-WEEK3-ez-phar"><a href="#HNCTF-2022-WEEK3-ez-phar" class="headerlink" title="[HNCTF 2022 WEEK3]ez_phar"></a>[HNCTF 2022 WEEK3]ez_phar</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs php"> <span class="hljs-meta">&lt;?php</span><br><span class="hljs-title function_ invoke__">show_source</span>(<span class="hljs-keyword">__FILE__</span>);<br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Flag</span></span>&#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-variable">$code</span>;<br>    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__destruct</span>(<span class="hljs-params"></span>)</span>&#123;<br>    <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> Implement __destruct() method.</span><br>        <span class="hljs-keyword">eval</span>(<span class="hljs-variable language_">$this</span>-&gt;code);<br>    &#125;<br>&#125;<br><span class="hljs-variable">$filename</span> = <span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;filename&#x27;</span>];<br><span class="hljs-title function_ invoke__">file_exists</span>(<span class="hljs-variable">$filename</span>);<br><span class="hljs-meta">?&gt;</span><br>upload something upload something<br></code></pre></td></tr></table></figure>
+
+<p><strong>file_exists</strong>:用于检查指定的文件或目录是否存在</p>
+<p>这里代码很简单，还要找上传文件的地方，扫一下路径</p>
+<p><img src="/img/320.png" alt="图片" title="320"></p>
+<p><img src="/img/321.png" alt="图片" title="321"></p>
+<p>把上面的test改一下，上传试试，应该是有过滤的</p>
+<p><img src="/img/322.png" alt="图片" title="322"></p>
+<p>抓个包改一下。</p>
+<p><img src="/img/323.png" alt="图片" title="323"></p>
+<p><img src="/img/324.png" alt="图片" title="324"></p>
+<p><img src="/img/325.png" alt="图片" title="325"></p>
+<p>成功👌</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-variable">$filename</span> = <span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&quot;file&quot;</span>][<span class="hljs-string">&quot;name&quot;</span>];<br><span class="hljs-keyword">if</span>(<span class="hljs-variable">$filename</span>) &#123;<br>    <span class="hljs-comment"># 获取后缀名</span><br>    <span class="hljs-variable">$uptype</span> = <span class="hljs-title function_ invoke__">strtolower</span>(<span class="hljs-title function_ invoke__">end</span>(<span class="hljs-title function_ invoke__">explode</span>(<span class="hljs-string">&quot;.&quot;</span>, <span class="hljs-variable">$filename</span>)));<br>    <span class="hljs-keyword">if</span> (<span class="hljs-title function_ invoke__">in_array</span>(<span class="hljs-variable">$uptype</span>, <span class="hljs-keyword">array</span>(<span class="hljs-string">&#x27;jpg&#x27;</span>, <span class="hljs-string">&#x27;png&#x27;</span>, <span class="hljs-string">&#x27;jpeg&#x27;</span>))) &#123;<br>        <span class="hljs-title function_ invoke__">move_uploaded_file</span>(<span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&quot;file&quot;</span>][<span class="hljs-string">&quot;tmp_name&quot;</span>], <span class="hljs-string">&#x27;upload/&#x27;</span> . <span class="hljs-variable">$filename</span>);<br>        <span class="hljs-title function_ invoke__">print_r</span>(<span class="hljs-string">&quot;上传成功!&quot;</span>);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-title function_ invoke__">print_r</span>(<span class="hljs-string">&quot;only jpg png jpeg&quot;</span>);<br>        <span class="hljs-keyword">die</span>(<span class="hljs-number">0</span>);<br>    &#125;<br>&#125;<br><br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>看看源码</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://cuttlefish520.github.io">cuttlefish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://cuttlefish520.github.io/2026/10/20/Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">https://cuttlefish520.github.io/2026/10/20/Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/php/">php</a><a class="post-meta__tags" href="/tags/Phar/">Phar</a><a class="post-meta__tags" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">反序列化</a></div><div class="post-share"><div class="social-share" data-image="/img/touxiang.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/10/19/%E6%AF%94%E8%B5%9B%E5%A4%8D%E7%8E%B0/moectf2026/" title="moectf2026"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">moectf2026</div></div><div class="info-2"><div class="info-item-1">moectf2026Week1当零来敲门题目描述  本题最初是「开发与运维基础」方向的题目，经运维组决定，打包流放 Web。这题原本是「开发与运维基础」里最有趣的题目，如今放到 Web，可一定要过好啊。 快来和群友（并不是）一起玩快乐的数字接龙！只要大家齐心协力从 1 数到 500，出题人就把 Flag 白送给你！ 诶等等，怎么聊天室里混进来了一个…… 这个「林林」是个无情的刷屏复读机，每过 10 秒钟就必须看到一次 0。只要它发了 0，大家刚刚数出来的进度就当场重置归零！ 本地 Python 服务请使用 ssh 连接，账号challenger，密码moectf2026。使用本地 Python 服务时，请求地址应改为http://127.0.0.1:8080/。   这要从1连接到500才能获得flag,这里用python ssh去连接，10秒内在前端太慢了 了解一下什么是ssh SSH全称secure shell，安全外壳协议（安全的shell），是一个计算机网络协议（默认端口号为22）。通过ssh协议可以在客户端安全（提供身份认证、信息加密）的远程连接LInux 服务器或其他...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">cuttlefish</div><div class="author-info-description">遇事不决，可问春风，春风不语，即随本心。</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/cuttlefish520"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">欢迎来到我的博客！在这里，我将分享我的技术心得、学习笔记和生活点滴。希望我的博客能为你提供有价值的信息和启发。如果你喜欢我的内容，请随时关注和留言交流！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">Phar反序列化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFPhar"><span class="toc-number">1.1.</span> <span class="toc-text">什么是Phar</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HNCTF-2022-WEEK3-ez-phar"><span class="toc-number">1.3.</span> <span class="toc-text">[HNCTF 2022 WEEK3]ez_phar</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/20/Phar%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="Phar反序列化">Phar反序列化</a><time datetime="2026-10-19T16:00:00.000Z" title="Created 2026-10-20 00:00:00">2026-10-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/19/%E6%AF%94%E8%B5%9B%E5%A4%8D%E7%8E%B0/moectf2026/" title="moectf2026">moectf2026</a><time datetime="2026-10-18T16:00:00.000Z" title="Created 2026-10-19 00:00:00">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/14/CVE/Fastjson1.2.x%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%20CVE-2026-16723%E5%A4%8D%E7%8E%B0/" title="Fastjson 1.2.x远程代码执行 CVE-2026-16723 漏洞复现">Fastjson 1.2.x远程代码执行 CVE-2026-16723 漏洞复现</a><time datetime="2026-10-13T16:00:00.000Z" title="Created 2026-10-14 00:00:00">2026-10-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/09/CVE/Apache%20APISIX%20JWT%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2026-39999%EF%BC%89%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Apache APISIX JWT身份验证绕过漏洞（CVE-2026-39999）复现">Apache APISIX JWT身份验证绕过漏洞（CVE-2026-39999）复现</a><time datetime="2026-10-08T16:00:00.000Z" title="Created 2026-10-09 00:00:00">2026-10-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/27/%E6%91%B8%E9%B1%BC/%E5%A5%BD%E9%9D%B6%E5%9C%BA%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/" title="好靶场流量分析">好靶场流量分析</a><time datetime="2026-09-26T16:00:00.000Z" title="Created 2026-09-27 00:00:00">2026-09-27</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By cuttlefish</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 6.0.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="输入关键字" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
