@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>后台管理系统——一个Oauth凭据泄露的登录绕过 | cuttlefish</title><meta name="author" content="cuttlefish"><meta name="copyright" content="cuttlefish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#edf5f3"><meta name="description" content="后台管理系统——一个Oauth凭据泄露的登录绕过前置知识OauthOAuth 是一套第三方授权标准协议，就是让一个应用，在不拿到你的账号密码的前提下，访问你在另一个平台上的资源，就比如平时在其他应用app 使用微信登录，你授权了应用可以拿到你的微信信息，但并没有泄露你的账户和密码。 12345678 OAuth2.0 最经典流程：授权码模式（Authorization Code）1. 客户端（第三">
+<meta property="og:type" content="article">
+<meta property="og:title" content="后台管理系统——一个Oauth凭据泄露的登录绕过">
+<meta property="og:url" content="https://cuttlefish520.github.io/2026/11/24/%E5%A5%BD%E9%9D%B6%E5%9C%BA/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="cuttlefish">
+<meta property="og:description" content="后台管理系统——一个Oauth凭据泄露的登录绕过前置知识OauthOAuth 是一套第三方授权标准协议，就是让一个应用，在不拿到你的账号密码的前提下，访问你在另一个平台上的资源，就比如平时在其他应用app 使用微信登录，你授权了应用可以拿到你的微信信息，但并没有泄露你的账户和密码。 12345678 OAuth2.0 最经典流程：授权码模式（Authorization Code）1. 客户端（第三">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cuttlefish520.github.io/img/touxiang.jpg">
+<meta property="article:published_time" content="2026-11-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-24T15:09:18.819Z">
+<meta property="article:author" content="cuttlefish">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cuttlefish520.github.io/img/touxiang.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "后台管理系统——一个Oauth凭据泄露的登录绕过",
+  "url": "https://cuttlefish520.github.io/2026/11/24/%E5%A5%BD%E9%9D%B6%E5%9C%BA/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/",
+  "image": "https://cuttlefish520.github.io/img/touxiang.jpg",
+  "datePublished": "2026-11-23T16:00:00.000Z",
+  "dateModified": "2026-11-24T15:09:18.819Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "cuttlefish",
+      "url": "https://cuttlefish520.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://cuttlefish520.github.io/2026/11/24/%E5%A5%BD%E9%9D%B6%E5%9C%BA/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#182424')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#edf5f3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":5,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '后台管理系统——一个Oauth凭据泄露的登录绕过',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/coastal.css"><meta name="generator" content="Hexo 6.0.0"></head><body class="coast-post"><div id="coastal-background" aria-hidden="true" data-color="/img/coast-colored.webp" data-original="/img/coast-original.webp"><picture class="scene-fallback"><source media="(max-width: 700px)" srcset="/img/coast-portrait.webp"><img src="/img/coast-colored.webp" alt="" fetchpriority="high" decoding="async" width="1920" height="1080"></picture><canvas id="coastal-canvas"></canvas><div class="scene-wash"></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-house"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-box-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div></div></div><div class="post coast-inner" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/coast-colored.webp);"><nav id="nav" aria-label="主导航"><span id="blog-info"><a class="nav-site-title" href="/"><i class="fas fa-feather-pointed brand-mark" aria-hidden="true"></i><span class="site-name">cuttlefish</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-house"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-box-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div><div class="nav-tools"><div id="search-button"><button class="site-page social-icon search" type="button" title="搜索文章" aria-label="搜索文章"><i class="fas fa-search fa-fw" aria-hidden="true"></i></button></div><button class="scene-tool" id="scene-motion-toggle" type="button" title="暂停背景动画" aria-label="暂停背景动画" aria-pressed="true" disabled><i class="fas fa-pause" aria-hidden="true"></i></button><button class="scene-tool" id="scene-color-toggle" type="button" title="切换为黑白原稿" aria-label="切换为黑白原稿" aria-pressed="true" disabled><i class="fas fa-palette" aria-hidden="true"></i></button><button class="scene-tool" id="scene-theme-toggle" type="button" title="切换深色模式" aria-label="切换深色模式" aria-pressed="false"><i class="far fa-moon" aria-hidden="true"></i></button><button id="toggle-menu" type="button" title="打开导航菜单" aria-label="打开导航菜单"><i class="fas fa-bars fa-fw" aria-hidden="true"></i></button></div></div></nav><div id="post-info"><h1 class="post-title">后台管理系统——一个Oauth凭据泄露的登录绕过</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-23T16:00:00.000Z" title="发表于 2026-11-24 00:00:00">2026-11-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-24T15:09:18.819Z" title="更新于 2026-11-24 23:09:18">2026-11-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A5%BD%E9%9D%B6%E5%9C%BA/">好靶场</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="后台管理系统——一个Oauth凭据泄露的登录绕过"><a href="#后台管理系统——一个Oauth凭据泄露的登录绕过" class="headerlink" title="后台管理系统——一个Oauth凭据泄露的登录绕过"></a>后台管理系统——一个Oauth凭据泄露的登录绕过</h1><h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><h3 id="Oauth"><a href="#Oauth" class="headerlink" title="Oauth"></a>Oauth</h3><p>OAuth 是一套<strong>第三方授权标准协议</strong>，就是让一个应用，在不拿到你的账号密码的前提下，访问你在另一个平台上的资源，就比如平时在其他应用app 使用微信登录，你授权了应用可以拿到你的微信信息，但并没有泄露你的账户和密码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs plaintext"> OAuth2.0 最经典流程：授权码模式（Authorization Code）<br><br>1. 客户端（第三方网站 / App）：引导你跳转到授权服务器（微信）<br>2. 你：在微信页面登录、确认授权范围<br>3. 授权服务器：回调给客户端一个一次性的【授权码 code】<br>4. 客户端：拿着 code + 自己的密钥，向授权服务器后端请求令牌<br>5. 授权服务器：校验通过，返回 `access_token`（访问令牌，有有效期）、可选 `refresh_token`（刷新令牌）<br>6. 客户端：使用 `access_token` 去资源服务器拉取你的用户数据<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2FA（Two-Factor-Authentication）"><a href="#2FA（Two-Factor-Authentication）" class="headerlink" title="2FA（Two-Factor Authentication）"></a>2FA（Two-Factor Authentication）</h3><p>参考<a target="_blank" rel="noopener" href="https://www.apkbang.com/articles/what-is-2fa-two-factor-authentication">2FA 是什么？双重身份验证原理与验证码使用指南</a></p>
+<p>它要求用户用两种不同类型的证据证明身份。即使密码泄露，攻击者通常还需要拿到你的手机、安全密钥或生物识别信息，才能继续登录。</p>
+<p><strong>常见的 2FA 验证方式</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">验证方式</th>
+<th align="left">如何工作</th>
+<th align="left">优点</th>
+<th align="left">需要注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">短信或语音验证码</td>
+<td align="left">平台向绑定号码发送一次性代码</td>
+<td align="left">开启简单、覆盖面广</td>
+<td align="left">可能遭遇 SIM 换卡、短信劫持、漫游或收不到验证码</td>
+</tr>
+<tr>
+<td align="left">邮箱验证码</td>
+<td align="left">代码发送到辅助邮箱</td>
+<td align="left">使用方便，适合找回与风险确认</td>
+<td align="left">如果邮箱本身失守，保护会一起失效；并非所有场景都属于严格 2FA</td>
+</tr>
+<tr>
+<td align="left">TOTP 身份验证器</td>
+<td align="left">设备根据共享密钥和当前时间生成短期动态码</td>
+<td align="left">通常离线可用，不依赖短信网络</td>
+<td align="left">密钥或二维码泄露后，别人也能生成相同验证码</td>
+</tr>
+<tr>
+<td align="left">登录推送</td>
+<td align="left">已登录设备弹出确认请求</td>
+<td align="left">操作快，可显示登录位置或设备</td>
+<td align="left">不要因连续轰炸而误点“允许”</td>
+</tr>
+<tr>
+<td align="left">硬件安全密钥</td>
+<td align="left">通过 USB、NFC 或蓝牙完成验证</td>
+<td align="left">抗钓鱼能力强，适合重要账号</td>
+<td align="left">应准备备用密钥或其他恢复方式</td>
+</tr>
+<tr>
+<td align="left">Passkey（通行密钥）</td>
+<td align="left">使用设备密钥，并由指纹、面容或设备 PIN 解锁</td>
+<td align="left">抗钓鱼、无需记密码，体验较好</td>
+<td align="left">同步、跨设备登录和账号恢复方式因生态而异</td>
+</tr>
+<tr>
+<td align="left">备用码</td>
+<td align="left">开启 2FA 时生成的一组一次性恢复代码</td>
+<td align="left">手机丢失或无法收码时可救急</td>
+<td align="left">应离线安全保存，用过即作废</td>
+</tr>
+</tbody></table>
+<p>TOTP 是 Time-Based One-Time Password，即“基于时间的一次性密码”。开启身份验证器时，平台会提供一个二维码、Base32 密钥或 <code>otpauth://</code> 配置链接。平台与身份验证器保存同一个共享密钥，再结合当前时间，分别计算出短期有效的验证码。</p>
+<p>常见实现会显示 6 位验证码，并大约每 30 秒更新一次。登录时，平台不是把验证码通过网络发送给你，而是用同一规则在服务器端计算并比对，因此身份验证器通常可以离线工作。具体位数、刷新周期和算法以服务提供方设置为准。</p>
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p><img src="/img/355.png" alt="图片" title="355"></p>
+<p>这里是一个后台登录口。</p>
+<p><img src="/img/356.png" alt="图片" title="356"></p>
+<p>这里可以看到前端用的是ng-alain，<strong>NG-ALAIN</strong>是国内开源、基于 Angular 的中后台管理系统脚手架（SPA 后台模板），Angular是谷歌的前端框架。SPA指的是单页应用 （Single Page Application），浏览器只一次性拉一整套 JS，页面跳转不刷新网页，全靠 JS 在浏览器本地渲染页面，所有接口请求，都由这个 JS 发起，那就可能打包一些密钥或配置信息</p>
+<p><img src="/img/357.png" alt="图片" title="357"></p>
+<p>数据响应包里有一个sever字段，uvicorn 是一个 ASGI Web 服务器，用来跑 Python 的 Web 框架（最常见就是 FastAPI），HTTP 响应头 <code>Server</code>，是 Web 服务程序主动告诉客户端：当前接收这个 HTTP 请求的服务程序是 uvicorn</p>
+<blockquote>
+<p>ASGI是什么</p>
+<ul>
+<li>WSGI：老的 Python web 协议（同步，Flask&#x2F;Django 老版本、gunicorn）</li>
+<li>ASGI：新一代，支持异步 async，所以 FastAPI、Starlette 用它，uvicorn 是 ASGI 服务器</li>
+</ul>
+</blockquote>
+<p>登录框上由三个参数，其中一个是动态码，说明需要二次验证</p>
+<h2 id="前端JS分析"><a href="#前端JS分析" class="headerlink" title="前端JS分析"></a>前端JS分析</h2><p><img src="/img/358.png" alt="图片" title="358"></p>
+<p>这里可以用工具提取接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">/services<br>/services/adminservice<br>/services/adminservice/api/admins<br>/services/adminservice/api/admins/self<br>/services/adminservice/api/audit/list<br>/services/adminservice/api/login<br>/services/adminservice/api/logout<br>/services/adminservice/api/menus<br>/services/baseservice<br>/services/baseservice/api/dict<br>/services/baseservice/api/merchants<br>/services/baseservice/api/merchants/orders<br>/services/baseservice/api/sys-logs<br>/services/systemservice<br>/services/systemservice/api/system/admins<br>/services/systemservice/api/system/admins/delete<br>/services/systemservice/api/system/admins/login<br>/services/systemservice/api/system/admins/save<br>/services/systemservice/api/system/roles<br>/services/uaaservice<br>/services/uaaservice/oauth/check_token<br>/services/uaaservice/oauth/token<br></code></pre></td></tr></table></figure>
+
+<p>可以看一下这个接口特征是符合后端微服务的特点，就是把一个大系统，拆成很多个独立、单独部署的小服务，每个服务只负责一小块功能。</p>
+<p><img src="/img/359.png" alt="图片" title="359"></p>
+<p>这里泄露了OAuth 客户端配置，这里获得了客户端ID和密钥，还有请求token的路由</p>
+<p>接着去看登录逻辑</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">bindLogin</span>(<span class="hljs-params"></span>) &#123;<br>        <span class="hljs-comment">//找到登录表单 DOM；页面没有这个表单就直接退出函数   </span><br>        <span class="hljs-keyword">var</span> form = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;login-form&quot;</span>);<br>        <span class="hljs-keyword">if</span> (!form) <span class="hljs-keyword">return</span>;<br>       <span class="hljs-comment">//给表单绑定 submit 提交事件</span><br>        form.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&quot;submit&quot;</span>, <span class="hljs-keyword">function</span> (<span class="hljs-params">ev</span>) &#123;<br>          ev.<span class="hljs-title function_">preventDefault</span>();<br>          <span class="hljs-keyword">var</span> login = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;login&quot;</span>).<span class="hljs-property">value</span>.<span class="hljs-title function_">trim</span>();<br>          <span class="hljs-keyword">var</span> password = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;password&quot;</span>).<span class="hljs-property">value</span>;<br>          <span class="hljs-keyword">var</span> googleCode = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;googleCode&quot;</span>).<span class="hljs-property">value</span>.<span class="hljs-title function_">trim</span>();<br>          <span class="hljs-comment">//发起 POST 登录请求</span><br>          <span class="hljs-title function_">request</span>(endpoints.<span class="hljs-property">admin</span>.<span class="hljs-property">login</span>, &#123;<br>            <span class="hljs-attr">method</span>: <span class="hljs-string">&quot;POST&quot;</span>,<br>            <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(&#123; <span class="hljs-attr">login</span>: login, <span class="hljs-attr">password</span>: password, <span class="hljs-attr">googleCode</span>: googleCode &#125;),<br>          &#125;)<span class="hljs-comment">//登录接口返回回调 `.then(function (res)`</span><br>            .<span class="hljs-title function_">then</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params">res</span>) &#123;<br>              <span class="hljs-keyword">if</span> (res.<span class="hljs-property">code</span> !== <span class="hljs-number">1000</span>) &#123;<br>                <span class="hljs-keyword">if</span> (res.<span class="hljs-property">code</span> === <span class="hljs-number">2214</span>) <span class="hljs-title function_">fail</span>(<span class="hljs-string">&quot;会话已失效，请重新登录（code=2214）&quot;</span>);<br>                <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.<span class="hljs-property">code</span> === <span class="hljs-number">2209</span>) <span class="hljs-title function_">fail</span>(<span class="hljs-string">&quot;Google 动态码校验失败（code=2209）&quot;</span>);<br>                <span class="hljs-keyword">else</span> <span class="hljs-title function_">fail</span>(<span class="hljs-string">&quot;账号或口令错误（code=&quot;</span> + res.<span class="hljs-property">code</span> + <span class="hljs-string">&quot;）&quot;</span>);<br>                <span class="hljs-keyword">return</span>;<br>              &#125;<br>              <span class="hljs-title function_">setToken</span>(res.<span class="hljs-property">data</span>.<span class="hljs-property">access_token</span>);<span class="hljs-comment">//登录成功下发用户token</span><br>              <span class="hljs-keyword">return</span> <span class="hljs-title function_">request</span>(endpoints.<span class="hljs-property">admin</span>.<span class="hljs-property">self</span>, &#123;<br>                <span class="hljs-attr">headers</span>: &#123; <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">&quot;Bearer &quot;</span> + <span class="hljs-title function_">getToken</span>() &#125;,<span class="hljs-comment">//登录成功后，自动调用 `/services/adminservice/api/admins/self`</span><br>              &#125;).<span class="hljs-title function_">then</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params">me</span>) &#123;<br>                <span class="hljs-keyword">if</span> (me.<span class="hljs-property">code</span> !== <span class="hljs-number">1000</span>) &#123; <span class="hljs-title function_">fail</span>(<span class="hljs-string">&quot;登录态校验失败（code=&quot;</span> + me.<span class="hljs-property">code</span> + <span class="hljs-string">&quot;）&quot;</span>); <span class="hljs-keyword">return</span>; &#125;<br>                <span class="hljs-title function_">showOk</span>(<span class="hljs-literal">true</span>);<br>                <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;user&quot;</span>).<span class="hljs-property">textContent</span> =<br>                  me.<span class="hljs-property">data</span>.<span class="hljs-property">login</span> + <span class="hljs-string">&quot; / &quot;</span> + me.<span class="hljs-property">data</span>.<span class="hljs-property">roleName</span>;<br>                <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;flagbox&quot;</span>).<span class="hljs-property">textContent</span> = me.<span class="hljs-property">flag</span> || <span class="hljs-string">&quot;(未下发)&quot;</span>;<br>                <span class="hljs-keyword">return</span> <span class="hljs-title function_">request</span>(endpoints.<span class="hljs-property">admin</span>.<span class="hljs-property">admins</span>, &#123;<br>                  <span class="hljs-attr">headers</span>: &#123; <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">&quot;Bearer &quot;</span> + <span class="hljs-title function_">getToken</span>() &#125;,<br>                &#125;).<span class="hljs-title function_">then</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params">list</span>) &#123;<br>                  <span class="hljs-keyword">if</span> (list.<span class="hljs-property">code</span> !== <span class="hljs-number">1000</span>) <span class="hljs-keyword">return</span>;<br>                  <span class="hljs-keyword">var</span> tbody = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&quot;admins&quot;</span>);<br>                  tbody.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">&quot;&quot;</span>;<br>                  list.<span class="hljs-property">data</span>.<span class="hljs-title function_">forEach</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params">a</span>) &#123;<br>                    <span class="hljs-keyword">var</span> tr = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">&quot;tr&quot;</span>);<br>                    tr.<span class="hljs-property">innerHTML</span> =<br>                      <span class="hljs-string">&quot;&lt;td&gt;&quot;</span> + a.<span class="hljs-property">login</span> + <span class="hljs-string">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span> + a.<span class="hljs-property">roleName</span> +<br>                      <span class="hljs-string">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span> + a.<span class="hljs-property">password</span> + <span class="hljs-string">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span> + a.<span class="hljs-property">googleKey</span> + <span class="hljs-string">&quot;&lt;/td&gt;&quot;</span>;<br>                    tbody.<span class="hljs-title function_">appendChild</span>(tr);<br>                  &#125;);<br>                &#125;);<br>              &#125;);<br>            &#125;)<br>            .<span class="hljs-title function_">catch</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) &#123; <span class="hljs-title function_">fail</span>(<span class="hljs-string">&quot;请求失败: &quot;</span> + err.<span class="hljs-property">message</span>); &#125;);<br>        &#125;);<br></code></pre></td></tr></table></figure>
+
+<h2 id="获取客户端token"><a href="#获取客户端token" class="headerlink" title="获取客户端token"></a>获取客户端token</h2><p>根据js泄露的客户端配置信息，去访问<code>/services/uaaservice/oauth/token</code></p>
+<p><img src="/img/360.png" alt="图片" title="360"></p>
+<p>这里添加一个请求头Authorization: Basic xxx    后面的就是<code>客户端ID:客户端密钥</code>的base64编码</p>
+<p><img src="/img/362.png" alt="图片" title="362"></p>
+<p>这里可以看到<code>ROLE_ADMIN</code>正常客户端拿到的token肯定是没有这么高的权限的</p>
+<p>带着token去访问<code>/services/systemservice/api/system/admins</code>就可以查看管理员信息</p>
+<p><img src="/img/361.png" alt="图片" title="361"></p>
+<p>拿到<code>admin，password:&quot;Passw0rd!1&quot;,googleKey:&quot;JBSWY3DPEHPK3PXP&quot;</code></p>
+<h2 id="离线生成动态码"><a href="#离线生成动态码" class="headerlink" title="离线生成动态码"></a>离线生成动态码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> base64, hmac, hashlib, struct, time<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">totp</span>(<span class="hljs-params">secret, digits=<span class="hljs-number">6</span>, step=<span class="hljs-number">30</span>, skew=<span class="hljs-number">0</span></span>):<br>    s = secret.strip().upper().replace(<span class="hljs-string">&quot; &quot;</span>, <span class="hljs-string">&quot;&quot;</span>)<br>    s += <span class="hljs-string">&quot;=&quot;</span> * ((<span class="hljs-number">8</span> - <span class="hljs-built_in">len</span>(s) % <span class="hljs-number">8</span>) % <span class="hljs-number">8</span>)          <span class="hljs-comment"># base32 补齐</span><br>    key = base64.b32decode(s)<br>    counter = <span class="hljs-built_in">int</span>(time.time() // step) + skew  <span class="hljs-comment"># skew 用于容错 ±1 窗口</span><br>    mac = hmac.new(key, struct.pack(<span class="hljs-string">&quot;&gt;Q&quot;</span>, counter), hashlib.sha1).digest()<br>    off = mac[-<span class="hljs-number">1</span>] &amp; <span class="hljs-number">0x0F</span>                        <span class="hljs-comment"># 动态截断</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">str</span>((struct.unpack(<span class="hljs-string">&quot;&gt;I&quot;</span>, mac[off:off+<span class="hljs-number">4</span>])[<span class="hljs-number">0</span>] &amp; <span class="hljs-number">0x7FFFFFFF</span>) % <span class="hljs-number">10</span>**digits).zfill(digits)<br><br><span class="hljs-built_in">print</span>(totp(<span class="hljs-string">&quot;JBSWY3DPEHPK3PXP&quot;</span>))   <span class="hljs-comment"># 可选：skew=-1 取上一窗口</span><br></code></pre></td></tr></table></figure>
+
+
+
+<p><img src="/img/363.png" alt="图片" title="363"></p>
+<p>登录成功</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://cuttlefish520.github.io">cuttlefish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://cuttlefish520.github.io/2026/11/24/%E5%A5%BD%E9%9D%B6%E5%9C%BA/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/">https://cuttlefish520.github.io/2026/11/24/%E5%A5%BD%E9%9D%B6%E5%9C%BA/%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://cuttlefish520.github.io" target="_blank">cuttlefish</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/touxiang.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/20/CVE/CVE-2022-21449%20JavaSE%E7%AD%BE%E5%90%8D%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="CVE-2022-21449 JavaSE签名绕过漏洞复现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">CVE-2022-21449 JavaSE签名绕过漏洞复现</div></div><div class="info-2"><div class="info-item-1">CVE-2022-21449 JavaSE签名绕过漏洞复现漏洞介绍CVE-2022-21449 也被称为 “Psychic Signatures（通灵签名）” 漏洞，是 Oracle Java SE 密码架构中的高危签名验证绕过漏洞，CVSS 3.1 评分为 7.5 分 漏洞仅影响 Java ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/touxiang.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">cuttlefish</div><div class="author-info-description">遇事不决，可问春风。<br>春风不语，即随本心。</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/cuttlefish520"><i class="fab fa-github"></i><span>GitHub</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">写一点代码，记一点日常。<br>很高兴在这里与你相遇。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%E2%80%94%E2%80%94%E4%B8%80%E4%B8%AAOauth%E5%87%AD%E6%8D%AE%E6%B3%84%E9%9C%B2%E7%9A%84%E7%99%BB%E5%BD%95%E7%BB%95%E8%BF%87"><span class="toc-number">1.</span> <span class="toc-text">后台管理系统——一个Oauth凭据泄露的登录绕过</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">1.1.</span> <span class="toc-text">前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Oauth"><span class="toc-number">1.1.1.</span> <span class="toc-text">Oauth</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2FA%EF%BC%88Two-Factor-Authentication%EF%BC%89"><span class="toc-number">1.1.2.</span> <span class="toc-text">2FA（Two-Factor Authentication）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">1.2.</span> <span class="toc-text">信息收集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%AB%AFJS%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">前端JS分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%AE%A2%E6%88%B7%E7%AB%AFtoken"><span class="toc-number">1.4.</span> <span class="toc-text">获取客户端token</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A6%BB%E7%BA%BF%E7%94%9F%E6%88%90%E5%8A%A8%E6%80%81%E7%A0%81"><span class="toc-number">1.5.</span> <span class="toc-text">离线生成动态码</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By cuttlefish</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></span></div><div class="footer_custom_text">山海自有归期，风雨自有相逢。</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="/js/coastal-scene.js" defer></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="输入关键字" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
